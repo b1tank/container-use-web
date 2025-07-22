@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "backend",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.main:app",
+                "--reload",
+                "--host",
+                "0.0.0.0"
+            ],
+            "cwd": "${workspaceFolder}/backend",
+            "jinja": true,
+            "justMyCode": false,
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "frontend",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "pnpm run dev",
+            "cwd": "${workspaceFolder}/frontend",
+            "preLaunchTask": "Debug Frontend Environment"
+        },
+        {
+            "name": "frontend: client",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}/frontend",
+        },
+    ]
+}

@@ -1,0 +1,290 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ContainerUseUI",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/api/v1/environments/": {
+            "get": {
+                "tags": [
+                    "environments"
+                ],
+                "summary": "List Environments",
+                "description": "List all container-use environments.",
+                "operationId": "environments-list_environments",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/Environment"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Environments-List Environments"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/environments/{environment_id}/logs": {
+            "get": {
+                "tags": [
+                    "environments"
+                ],
+                "summary": "Get Environment Logs",
+                "description": "Get logs for a specific environment by ID.",
+                "operationId": "environments-get_environment_logs",
+                "parameters": [
+                    {
+                        "name": "environment_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Environment Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "title": "Response Environments-Get Environment Logs"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/environments/{environment_id}/diff": {
+            "get": {
+                "tags": [
+                    "environments"
+                ],
+                "summary": "Get Environment Diff",
+                "description": "Get diff for a specific environment by ID.",
+                "operationId": "environments-get_environment_diff",
+                "parameters": [
+                    {
+                        "name": "environment_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Environment Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "title": "Response Environments-Get Environment Diff"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/environments/actions": {
+            "post": {
+                "tags": [
+                    "environments"
+                ],
+                "summary": "Execute Action",
+                "description": "Execute an action on an environment (apply, checkout, delete, merge).",
+                "operationId": "environments-execute_action",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ActionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ActionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ActionRequest": {
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "title": "Action"
+                    },
+                    "environment_id": {
+                        "type": "string",
+                        "title": "Environment Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "action",
+                    "environment_id"
+                ],
+                "title": "ActionRequest",
+                "description": "Request model for performing actions on environments."
+            },
+            "ActionResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "title": "Success"
+                    },
+                    "action": {
+                        "type": "string",
+                        "title": "Action"
+                    },
+                    "environment_id": {
+                        "type": "string",
+                        "title": "Environment Id"
+                    },
+                    "output": {
+                        "type": "string",
+                        "title": "Output"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "success",
+                    "action",
+                    "environment_id",
+                    "output"
+                ],
+                "title": "ActionResponse",
+                "description": "Response model for action execution."
+            },
+            "Environment": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "created": {
+                        "type": "string",
+                        "title": "Created"
+                    },
+                    "updated": {
+                        "type": "string",
+                        "title": "Updated"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "title",
+                    "created",
+                    "updated"
+                ],
+                "title": "Environment",
+                "description": "Represents a container-use environment."
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        }
+    }
+}
