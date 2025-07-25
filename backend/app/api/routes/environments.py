@@ -18,10 +18,11 @@ from app.models import (
     Environment,
 )
 
-router = APIRouter(prefix="/environments", tags=["environments"])
+api_router = APIRouter(prefix="/environments", tags=["environments"])
+ws_router = APIRouter(prefix="/environments", tags=["environments_ws"])
 
 
-@router.get("/", response_model=List[Environment])
+@api_router.get("/", response_model=List[Environment])
 async def list_environments() -> Any:
     """
     List all container-use environments.
@@ -47,7 +48,7 @@ async def list_environments() -> Any:
         )
 
 
-@router.get("/{environment_id}/logs")
+@api_router.get("/{environment_id}/logs")
 async def get_environment_logs(environment_id: str) -> Any:
     """
     Get logs for a specific environment by ID.
@@ -87,7 +88,7 @@ async def get_environment_logs(environment_id: str) -> Any:
     return stdout
 
 
-@router.get("/{environment_id}/diff")
+@api_router.get("/{environment_id}/diff")
 async def get_environment_diff(environment_id: str) -> Any:
     """
     Get diff for a specific environment by ID.
@@ -127,7 +128,7 @@ async def get_environment_diff(environment_id: str) -> Any:
     return stdout
 
 
-@router.post("/actions", response_model=ActionResponse)
+@api_router.post("/actions", response_model=ActionResponse)
 async def execute_action(request: ActionRequest) -> Any:
     """
     Execute an action on an environment (apply, checkout, delete, merge).
@@ -188,8 +189,7 @@ async def execute_action(request: ActionRequest) -> Any:
 
 
 # WebSocket endpoints
-
-
+@ws_router.websocket("/watch")
 async def watch_environments_websocket(websocket: WebSocket):
     """
     WebSocket endpoint for real-time environment activity updates.
@@ -202,78 +202,38 @@ async def watch_environments_websocket(websocket: WebSocket):
             settings.get_container_use_bin(),
             "watch",
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,  # Merge stderr into stdout for simplicity
             cwd=settings.get_container_use_work_dir(),
         )
 
-        # Handle stdout
-        async def handle_stdout():
-            while True:
-                try:
-                    line = await process.stdout.readline()
-                    if not line:
-                        break
-                    await websocket.send_json(
-                        {"type": "stdout", "data": line.decode("utf-8")}
-                    )
-                except Exception:
-                    break
+        # Simple sequential reading
+        while True:
+            line = await process.stdout.readline()
+            if not line:
+                break
 
-        # Handle stderr
-        async def handle_stderr():
-            while True:
-                try:
-                    line = await process.stderr.readline()
-                    if not line:
-                        break
-                    await websocket.send_json(
-                        {"type": "stderr", "data": line.decode("utf-8")}
-                    )
-                except Exception:
-                    break
+            await websocket.send_json({"type": "stdout", "data": line.decode("utf-8")})
 
-        # Start handling both streams
-        tasks = [
-            asyncio.create_task(handle_stdout()),
-            asyncio.create_task(handle_stderr()),
-        ]
-
-        try:
-            # Wait for WebSocket close or command completion
-            while True:
-                try:
-                    await websocket.receive_text()
-                except WebSocketDisconnect:
-                    break
-        finally:
-            # Clean up
-            if process.returncode is None:
-                process.terminate()
-                try:
-                    await asyncio.wait_for(process.wait(), timeout=5.0)
-                except asyncio.TimeoutError:
-                    process.kill()
-                    await process.wait()
-
-            # Cancel tasks
-            for task in tasks:
-                task.cancel()
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
-
+        # Process finished
+        await process.wait()
     except WebSocketDisconnect:
         pass
     except Exception as e:
         try:
-            await websocket.send_json(
-                {"type": "error", "data": f"WebSocket error: {str(e)}"}
-            )
+            await websocket.send_json({"type": "error", "data": f"Error: {str(e)}"})
+        except Exception:
+            pass
+    finally:
+        # Clean up
+        try:
+            if process and process.returncode is None:
+                process.terminate()
+                await process.wait()
         except Exception:
             pass
 
 
+@ws_router.websocket("/{environment_id}/terminal")
 async def terminal_websocket(websocket: WebSocket, environment_id: str):
     """
     WebSocket endpoint for terminal access to environment container.

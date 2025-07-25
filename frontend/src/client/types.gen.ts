@@ -4,56 +4,56 @@
  * Request model for performing actions on environments.
  */
 export type ActionRequest = {
-    action: string
-    environment_id: string
-}
+    action: string;
+    environment_id: string;
+};
 
 /**
  * Response model for action execution.
  */
 export type ActionResponse = {
-    success: boolean
-    action: string
-    environment_id: string
-    output: string
-}
+    success: boolean;
+    action: string;
+    environment_id: string;
+    output: string;
+};
 
 /**
  * Represents a container-use environment.
  */
 export type Environment = {
-    id: string
-    title: string
-    created: string
-    updated: string
-}
+    id: string;
+    title: string;
+    created: string;
+    updated: string;
+};
 
 export type HTTPValidationError = {
-    detail?: Array<ValidationError>
-}
+    detail?: Array<ValidationError>;
+};
 
 export type ValidationError = {
-    loc: Array<string | number>
-    msg: string
-    type: string
-}
+    loc: Array<(string | number)>;
+    msg: string;
+    type: string;
+};
 
-export type EnvironmentsListEnvironmentsResponse = Array<Environment>
+export type EnvironmentsListEnvironmentsResponse = (Array<Environment>);
 
 export type EnvironmentsGetEnvironmentLogsData = {
-    environmentId: string
-}
+    environmentId: string;
+};
 
-export type EnvironmentsGetEnvironmentLogsResponse = unknown
+export type EnvironmentsGetEnvironmentLogsResponse = (unknown);
 
 export type EnvironmentsGetEnvironmentDiffData = {
-    environmentId: string
-}
+    environmentId: string;
+};
 
-export type EnvironmentsGetEnvironmentDiffResponse = unknown
+export type EnvironmentsGetEnvironmentDiffResponse = (unknown);
 
 export type EnvironmentsExecuteActionData = {
-    requestBody: ActionRequest
-}
+    requestBody: ActionRequest;
+};
 
-export type EnvironmentsExecuteActionResponse = ActionResponse
+export type EnvironmentsExecuteActionResponse = (ActionResponse);
