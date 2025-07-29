@@ -3,80 +3,26 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { EnvironmentsListEnvironmentsResponse, EnvironmentsGetEnvironmentLogsData, EnvironmentsGetEnvironmentLogsResponse, EnvironmentsGetEnvironmentDiffData, EnvironmentsGetEnvironmentDiffResponse, EnvironmentsExecuteActionData, EnvironmentsExecuteActionResponse } from './types.gen';
+import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse } from './types.gen';
 
-export class EnvironmentsService {
+export class DefaultService {
     /**
-     * List Environments
-     * List all container-use environments.
-     * @returns Environment Successful Response
-     * @throws ApiError
-     */
-    public static listEnvironments(): CancelablePromise<EnvironmentsListEnvironmentsResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/environments/'
-        });
-    }
-    
-    /**
-     * Get Environment Logs
-     * Get logs for a specific environment by ID.
      * @param data The data for the request.
-     * @param data.environmentId
-     * @returns unknown Successful Response
+     * @param data.folder Working directory for the CLI command
+     * @param data.cli Path to the container-use CLI
+     * @returns EnvironmentList List of environments
      * @throws ApiError
      */
-    public static getEnvironmentLogs(data: EnvironmentsGetEnvironmentLogsData): CancelablePromise<EnvironmentsGetEnvironmentLogsResponse> {
+    public static getApiV1Environments(data: GetApiV1EnvironmentsData = {}): CancelablePromise<GetApiV1EnvironmentsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/v1/environments/{environment_id}/logs',
-            path: {
-                environment_id: data.environmentId
+            url: '/api/v1/environments',
+            query: {
+                folder: data.folder,
+                cli: data.cli
             },
             errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Get Environment Diff
-     * Get diff for a specific environment by ID.
-     * @param data The data for the request.
-     * @param data.environmentId
-     * @returns unknown Successful Response
-     * @throws ApiError
-     */
-    public static getEnvironmentDiff(data: EnvironmentsGetEnvironmentDiffData): CancelablePromise<EnvironmentsGetEnvironmentDiffResponse> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/environments/{environment_id}/diff',
-            path: {
-                environment_id: data.environmentId
-            },
-            errors: {
-                422: 'Validation Error'
-            }
-        });
-    }
-    
-    /**
-     * Execute Action
-     * Execute an action on an environment (apply, checkout, delete, merge).
-     * @param data The data for the request.
-     * @param data.requestBody
-     * @returns ActionResponse Successful Response
-     * @throws ApiError
-     */
-    public static executeAction(data: EnvironmentsExecuteActionData): CancelablePromise<EnvironmentsExecuteActionResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/environments/actions',
-            body: data.requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: 'Validation Error'
+                500: 'Internal server error'
             }
         });
     }

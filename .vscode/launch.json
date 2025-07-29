@@ -2,20 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "backend",
-            "type": "debugpy",
+            "name": "backend (deno)",
+            "type": "node",
             "request": "launch",
-            "module": "uvicorn",
-            "args": [
-                "app.main:app",
-                "--reload",
-                "--host",
-                "0.0.0.0"
-            ],
             "cwd": "${workspaceFolder}/backend",
-            "jinja": true,
-            "justMyCode": false,
-            "envFile": "${workspaceFolder}/.env"
+            "runtimeExecutable": "deno",
+            "program": "${workspaceFolder}/backend/main.ts",
+            "runtimeArgs": [
+                "--watch-hmr"
+            ],
+            "console": "integratedTerminal",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         },
         {
             "name": "frontend",

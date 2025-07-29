@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "biomejs.biome",
-        "charliermarsh.ruff"
+        "charliermarsh.ruff",
+        "denoland.vscode-deno"
     ]
 }

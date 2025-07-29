@@ -1,4 +1,8 @@
 {
+    "deno.enablePaths": [
+        "./"
+    ],
+    "editor.inlayHints.enabled": "off",
     // File exclusions
     "files.watcherExclude": {
         "**/routeTree.gen.ts": true
@@ -26,10 +30,18 @@
         },
     },
     "[javascript]": {
-        "editor.defaultFormatter": "biomejs.biome"
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports.biome": "explicit"
+        },
     },
     "[javascriptreact]": {
-        "editor.defaultFormatter": "biomejs.biome"
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports.biome": "explicit"
+        },
     },
     "[css]": {
         "editor.defaultFormatter": "biomejs.biome"
@@ -39,5 +51,6 @@
     },
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
-    }
+    },
+    "deno.enable": true
 }

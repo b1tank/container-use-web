@@ -3,10 +3,7 @@
 set -e
 set -x
 
-cd backend
-python -c "import app.main; import json; print(json.dumps(app.main.app.openapi()))" > ../openapi.json
-cd ..
-mv openapi.json frontend/
+mv backend/openapi.json frontend/
 cd frontend
 pnpm run generate-client
 npx biome format --write ./src/client
