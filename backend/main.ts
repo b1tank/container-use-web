@@ -2,8 +2,13 @@ import { OpenAPIHono } from "npm:@hono/zod-openapi";
 import { environments } from "./routes/environments.ts";
 import { swaggerUI } from "@hono/swagger-ui";
 import { upgradeWebSocket } from "hono/deno";
+import { cors } from "hono/cors";
 
-const app = new OpenAPIHono().basePath("/api/v1");
+const app = new OpenAPIHono()
+  .basePath("/api/v1");
+
+// without CORS, 'network error' will be thrown by axios in the frontend
+app.use(cors());
 
 // Mount the environments routes
 app.route("/", environments);

@@ -1,6 +1,6 @@
 {
     "deno.enablePaths": [
-        "./"
+        "./backend"
     ],
     "editor.inlayHints.enabled": "off",
     // File exclusions

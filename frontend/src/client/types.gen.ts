@@ -9,6 +9,16 @@ export type Environment = {
 
 export type EnvironmentList = Array<Environment>;
 
+export type Error = {
+    error: string;
+    details?: {
+        exitCode: number;
+        stderr: string;
+        command: string;
+        cwd: string;
+    };
+};
+
 export type GetApiV1EnvironmentsData = {
     /**
      * Path to the container-use CLI

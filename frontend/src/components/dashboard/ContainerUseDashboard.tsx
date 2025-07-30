@@ -22,7 +22,15 @@ import { TerminalViewer } from "./sections/TerminalViewer"
 import { WatchViewer } from "./sections/WatchViewer"
 import { WorkspaceViewer } from "./sections/WorkspaceViewer"
 
-export function ContainerUseDashboard() {
+interface ContainerUseDashboardProps {
+    folder?: string
+    cli?: string
+}
+
+export function ContainerUseDashboard({
+    folder,
+    cli,
+}: ContainerUseDashboardProps) {
     const [selectedEnvironment, setSelectedEnvironment] = useState<
         string | null
     >(null)
@@ -112,6 +120,8 @@ export function ContainerUseDashboard() {
                                             onSelectEnvironment={
                                                 setSelectedEnvironment
                                             }
+                                            folder={folder}
+                                            cli={cli}
                                         />
                                     </CardContent>
                                 </Card>

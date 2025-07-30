@@ -35,7 +35,8 @@
     "react-resizable-panels": "^3.0.3",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.7"
+    "tailwindcss": "^4.1.7",
+    "zod": "^4.0.13"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",

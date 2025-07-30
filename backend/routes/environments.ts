@@ -3,7 +3,7 @@ import { OpenAPIHono } from "npm:@hono/zod-openapi";
 import * as os from "node:os";
 import { parseEnvironmentList } from "../utils/parser.ts";
 import { CLI_COMMANDS, DEFAULT_CLI_PATH } from "../constants.ts";
-import { EnvironmentListSchema } from "../models/environment.ts";
+import { EnvironmentListSchema, ErrorSchema } from "../models/environment.ts";
 
 // Route to list all environments
 export const environmentListRoute = createRoute({
@@ -39,6 +39,11 @@ export const environmentListRoute = createRoute({
       description: "List of environments",
     },
     500: {
+      content: {
+        "application/json": {
+          schema: ErrorSchema,
+        },
+      },
       description: "Internal server error",
     },
   },

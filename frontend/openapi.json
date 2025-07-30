@@ -38,6 +38,41 @@
                 "items": {
                     "$ref": "#/components/schemas/Environment"
                 }
+            },
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "example": "Failed to fetch environments"
+                    },
+                    "details": {
+                        "type": "object",
+                        "properties": {
+                            "exitCode": {
+                                "type": "number"
+                            },
+                            "stderr": {
+                                "type": "string"
+                            },
+                            "command": {
+                                "type": "string"
+                            },
+                            "cwd": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "exitCode",
+                            "stderr",
+                            "command",
+                            "cwd"
+                        ]
+                    }
+                },
+                "required": [
+                    "error"
+                ]
             }
         },
         "parameters": {}
@@ -81,7 +116,14 @@
                         }
                     },
                     "500": {
-                        "description": "Internal server error"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
                     }
                 }
             }
