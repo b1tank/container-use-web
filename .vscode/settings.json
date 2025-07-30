@@ -2,7 +2,6 @@
     "deno.enablePaths": [
         "./backend"
     ],
-    "editor.inlayHints.enabled": "off",
     // File exclusions
     "files.watcherExclude": {
         "**/routeTree.gen.ts": true
@@ -19,7 +18,7 @@
         "editor.defaultFormatter": "biomejs.biome",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.organizeImports.biome": "always"
+            "source.organizeImports.biome": "explicit"
         },
     },
     "[typescriptreact]": {

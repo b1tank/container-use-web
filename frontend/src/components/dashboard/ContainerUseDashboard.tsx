@@ -48,7 +48,7 @@ export function ContainerUseDashboard({
                         >
                             {/* Top: Workspace */}
                             <ResizablePanel defaultSize={50} minSize={30}>
-                                <Card className="h-full rounded-none border-r border-l-0 border-t-0 border-b-0">
+                                <Card className="h-full rounded-none border-r-0 border-l-0 border-t-0 border-b-0">
                                     <CardHeader>
                                         <CardTitle className="text-lg flex items-center gap-2">
                                             <Folder className="h-5 w-5" />
@@ -56,8 +56,10 @@ export function ContainerUseDashboard({
                                         </CardTitle>
                                     </CardHeader>
                                     <Separator />
-                                    <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <WorkspaceViewer />
+                                    <CardContent className="p-0 h-[calc(100%-2rem)] overflow-hidden">
+                                        <WorkspaceViewer
+                                            initialFolder={folder}
+                                        />
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>

@@ -8,7 +8,7 @@ export function LogViewer({ environmentId }: LogViewerProps) {
 
     if (!environmentId) {
         return (
-            <div className="flex items-center justify-center h-full">
+            <div className="h-full flex items-center justify-center">
                 <div className="text-sm text-muted-foreground">
                     Select an environment to view logs
                 </div>
@@ -17,7 +17,7 @@ export function LogViewer({ environmentId }: LogViewerProps) {
     }
 
     return (
-        <div className="flex items-center justify-center h-full">
+        <div className="h-full flex items-center justify-center">
             <div className="text-center space-y-2">
                 <div className="text-sm text-muted-foreground">
                     Logs functionality not yet implemented

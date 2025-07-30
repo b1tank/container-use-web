@@ -8,7 +8,7 @@ export function DiffViewer({ environmentId }: DiffViewerProps) {
 
     if (!environmentId) {
         return (
-            <div className="flex items-center justify-center h-full">
+            <div className="h-full flex items-center justify-center">
                 <div className="text-sm text-muted-foreground">
                     Select an environment to view diff
                 </div>
@@ -17,7 +17,7 @@ export function DiffViewer({ environmentId }: DiffViewerProps) {
     }
 
     return (
-        <div className="flex items-center justify-center h-full">
+        <div className="h-full flex items-center justify-center">
             <div className="text-center space-y-2">
                 <div className="text-sm text-muted-foreground">
                     Diff functionality not yet implemented

@@ -25,9 +25,12 @@ export function WatchViewer() {
 
     return (
         <div className="h-full flex flex-col">
-            <div className="border-b px-4 py-2 bg-muted/50">
+            {/* Status Header */}
+            <div className="px-3 py-2 border-b bg-muted/30">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium">Real-time Activity</h3>
+                    <span className="text-sm font-semibold">
+                        Real-time Activity
+                    </span>
                     <div
                         className={`text-xs px-2 py-1 rounded ${
                             isConnected
@@ -39,6 +42,8 @@ export function WatchViewer() {
                     </div>
                 </div>
             </div>
+
+            {/* Watch Content */}
             <div className="flex-1 overflow-auto">
                 <div className="p-4 space-y-1">
                     {watchData.length === 0 ? (

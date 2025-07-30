@@ -1,5 +1,6 @@
 import { OpenAPIHono } from "npm:@hono/zod-openapi";
 import { environments } from "./routes/environments.ts";
+import { files } from "./routes/files.ts";
 import { swaggerUI } from "@hono/swagger-ui";
 import { upgradeWebSocket } from "hono/deno";
 import { cors } from "hono/cors";
@@ -12,6 +13,9 @@ app.use(cors());
 
 // Mount the environments routes
 app.route("/", environments);
+
+// Mount the files routes
+app.route("/", files);
 
 // The OpenAPI documentation will be available at /api/v1/doc
 app.doc("/doc", {
