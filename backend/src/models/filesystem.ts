@@ -1,4 +1,4 @@
-import { z } from "npm:@hono/zod-openapi";
+import { z } from "@hono/zod-openapi";
 
 /**
  * File system entry schema (simplified for directory browsing)

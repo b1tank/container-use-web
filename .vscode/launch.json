@@ -2,19 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "backend (deno)",
-            "type": "node",
+            "name": "backend",
             "request": "launch",
-            "cwd": "${workspaceFolder}/backend",
-            "runtimeExecutable": "deno",
-            "program": "${workspaceFolder}/backend/main.ts",
             "runtimeArgs": [
-                "--watch-hmr"
+                "run",
+                "dev"
             ],
-            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/backend",
+            "runtimeExecutable": "pnpm",
             "skipFiles": [
                 "<node_internals>/**"
-            ]
+            ],
+            "type": "node"
         },
         {
             "name": "frontend",

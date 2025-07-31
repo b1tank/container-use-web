@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Terminal Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00ff00;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #005a9e;
+        }
+
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status.connected {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .status.disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .status.connecting {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        #terminal {
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+            background-color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="controls">
+            <button id="connectBtn">Connect</button>
+            <button id="disconnectBtn" disabled>Disconnect</button>
+            <button id="clearBtn">Clear Terminal</button>
+            <div id="status" class="status disconnected">Disconnected</div>
+        </div>
+
+        <div id="terminal"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+    <script>
+        // Terminal setup
+        const term = new Terminal({
+            cursorBlink: true,
+            theme: {
+                background: '#000000',
+                foreground: '#ffffff',
+                cursor: '#ffffff',
+                selection: '#3b82f6'
+            },
+            fontSize: 14,
+            fontFamily: '"Cascadia Code", "Fira Code", "JetBrains Mono", "SF Mono", Consolas, "Liberation Mono", Menlo, Monaco, monospace'
+        });
+
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+
+        term.open(document.getElementById('terminal'));
+        fitAddon.fit();
+
+        // WebSocket connection
+        let websocket = null;
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const status = document.getElementById('status');
+
+        function updateStatus(state, message) {
+            status.className = `status ${state}`;
+            status.textContent = message;
+        }
+
+        function connect() {
+            if (websocket) {
+                websocket.close();
+            }
+
+            updateStatus('connecting', 'Connecting...');
+            connectBtn.disabled = true;
+
+            // Use the WebSocket endpoint from your backend
+            const wsUrl = 'ws://localhost:8000/ws/v1/terminal';
+
+            try {
+                websocket = new WebSocket(wsUrl);
+
+                websocket.onopen = function (event) {
+                    updateStatus('connected', 'Connected');
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+
+                    term.writeln('\r\n\x1b[32mConnected to WebSocket terminal!\x1b[0m');
+                };
+
+                websocket.onmessage = function (event) {
+                    // Simple string data - write directly to terminal
+                    term.write(event.data);
+                };
+
+                websocket.onclose = function (event) {
+                    updateStatus('disconnected', 'Disconnected');
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+
+                    if (event.code !== 1000) {
+                        term.writeln(`\r\n\x1b[31mConnection closed: ${event.code} ${event.reason}\x1b[0m\r\n`);
+                    } else {
+                        term.writeln('\r\n\x1b[33mConnection closed normally\x1b[0m\r\n');
+                    }
+                };
+
+                websocket.onerror = function (error) {
+                    updateStatus('disconnected', 'Connection Error');
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+
+                    term.writeln(`\r\n\x1b[31mWebSocket error: ${error}\x1b[0m\r\n`);
+                };
+
+            } catch (error) {
+                updateStatus('disconnected', 'Connection Failed');
+                connectBtn.disabled = false;
+                term.writeln(`\r\n\x1b[31mFailed to connect: ${error.message}\x1b[0m\r\n`);
+            }
+        }
+
+        function disconnect() {
+            if (websocket) {
+                websocket.close(1000, 'User initiated disconnect');
+            }
+        }
+
+        function clearTerminal() {
+            term.clear();
+        }
+
+        // Event listeners
+        connectBtn.addEventListener('click', connect);
+        disconnectBtn.addEventListener('click', disconnect);
+        clearBtn.addEventListener('click', clearTerminal);
+
+        // Handle terminal input directly
+        term.onData((data) => {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                // Send data directly as string
+                websocket.send(data);
+            }
+        });
+
+        // Handle terminal resize (removed since backend doesn't handle resize messages)
+        term.onResize((size) => {
+            // Terminal resize is not implemented in the current backend API
+            console.log(`Terminal resized to ${size.cols}x${size.rows}`);
+        });
+
+        // Resize terminal on window resize
+        window.addEventListener('resize', () => {
+            fitAddon.fit();
+        });
+
+        // Initial welcome message
+        term.writeln('\x1b[36mWebSocket Terminal Test\x1b[0m');
+        term.writeln('\x1b[37mClick "Connect" to establish WebSocket connection\x1b[0m');
+        term.writeln('\x1b[37mEndpoint: ws://localhost:8000/ws/v1/terminal\x1b[0m');
+    </script>
+</body>
+
+</ht

@@ -1,4 +1,4 @@
-import { type Environment } from '../models/environment.ts';
+import { type Environment } from '../models/environment.js';
 
 /**
  * Function to parse CLI output into Environment objects

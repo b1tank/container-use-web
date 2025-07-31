@@ -1,9 +1,10 @@
-import { createRoute, z } from "npm:@hono/zod-openapi";
-import { OpenAPIHono } from "npm:@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import * as path from "node:path";
 import * as os from "node:os";
-import { DirectoryListingSchema } from "../models/filesystem.ts";
-import { ErrorSchema } from "../models/environment.ts";
+import { promises as fs } from "node:fs";
+import { DirectoryListingSchema } from "../models/filesystem.js";
+import { ErrorSchema } from "../models/environment.js";
 
 // Route to list directory contents
 export const directoryListRoute = createRoute({
@@ -53,8 +54,8 @@ files.openapi(directoryListRoute, async (c) => {
     const resolvedPath = path.resolve(targetPath);
 
     // Check if path exists and is a directory
-    const stats = await Deno.stat(resolvedPath);
-    if (!stats.isDirectory) {
+    const stats = await fs.stat(resolvedPath);
+    if (!stats.isDirectory()) {
       return c.json({
         error: "Path is not a directory",
         details: {
@@ -75,15 +76,16 @@ files.openapi(directoryListRoute, async (c) => {
       modified?: string;
     }> = [];
 
-    for await (const entry of Deno.readDir(resolvedPath)) {
-      const entryPath = path.join(resolvedPath, entry.name);
+    const entries = await fs.readdir(resolvedPath);
+    for (const entryName of entries) {
+      const entryPath = path.join(resolvedPath, entryName);
       try {
-        const entryStats = await Deno.stat(entryPath);
+        const entryStats = await fs.stat(entryPath);
         items.push({
-          name: entry.name,
+          name: entryName,
           path: entryPath,
-          type: entryStats.isDirectory ? "directory" : "file",
-          size: entryStats.isFile ? entryStats.size : undefined,
+          type: entryStats.isDirectory() ? "directory" : "file",
+          size: entryStats.isFile() ? entryStats.size : undefined,
           modified: entryStats.mtime?.toISOString(),
         });
       } catch {
