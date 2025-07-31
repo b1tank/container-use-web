@@ -5,10 +5,19 @@ import {
     FileIcon,
     FolderIcon,
     Home,
+    Loader2,
     RefreshCcw,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { DefaultService, type GetApiV1FilesResponse } from "@/client"
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import {
     ResizableHandle,
@@ -66,7 +75,7 @@ function FileTree({
                 </>
             )}
             <span className="text-sm flex-1">{entry.name}</span>
-            {entry.type === "file" && entry.size && (
+            {entry.type === "file" && entry.size !== undefined && (
                 <span className="text-xs text-muted-foreground ml-2">
                     {formatFileSize(entry.size)}
                 </span>
@@ -112,11 +121,13 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
 
     const fetchDirectory = useCallback(
         async (path?: string, updateUrl = true) => {
+            console.log("Fetching directory:", path)
             setLoading(true)
             setError(null)
 
             try {
                 const response = await DefaultService.getApiV1Files({ path })
+                console.log("API response:", response)
                 setDirectoryData(response)
                 setCurrentPath(response.path)
 
@@ -161,6 +172,7 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
     }
 
     const handleDirectoryClick = (path: string) => {
+        console.log("Directory click - navigating to:", path)
         setSelectedPath(path)
         fetchDirectory(path) // This will update URL
     }
@@ -177,6 +189,52 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
     }
 
     const pathSegments = currentPath.split("/").filter(Boolean)
+
+    // Simple and reliable path construction for breadcrumbs
+    const constructBreadcrumbPath = (segmentIndex: number) => {
+        // Split current path and rebuild up to the target segment
+        const allParts = currentPath.split("/")
+
+        // Find where our pathSegments start in the full path
+        // Work backwards to find the matching sequence
+        let startIdx = -1
+        for (let i = allParts.length - pathSegments.length; i >= 0; i--) {
+            let matches = true
+            for (let j = 0; j < pathSegments.length; j++) {
+                if (allParts[i + j] !== pathSegments[j]) {
+                    matches = false
+                    break
+                }
+            }
+            if (matches) {
+                startIdx = i
+                break
+            }
+        }
+
+        if (startIdx === -1) {
+            // Fallback: just use the segments we have
+            const targetSegments = pathSegments.slice(0, segmentIndex + 1)
+            return "/" + targetSegments.join("/")
+        }
+
+        // Build path up to the target segment
+        const endIdx = startIdx + segmentIndex + 1
+        const targetParts = allParts.slice(0, endIdx)
+        const result = targetParts.join("/") || "/"
+
+        console.log("Breadcrumb path construction:", {
+            currentPath,
+            pathSegments,
+            segmentIndex,
+            startIdx,
+            endIdx,
+            targetParts,
+            result,
+        })
+
+        return result
+    }
 
     return (
         <div className="h-full">
@@ -230,25 +288,66 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                 </div>
                             </div>
 
-                            {/* Breadcrumb */}
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2 overflow-hidden">
-                                <Home className="w-3 h-3 flex-shrink-0" />
-                                {pathSegments.map((segment, index) => {
-                                    const cumulativePath = pathSegments
-                                        .slice(0, index + 1)
-                                        .join("/")
-                                    return (
-                                        <div
-                                            key={cumulativePath}
-                                            className="flex items-center gap-1 min-w-0"
-                                        >
-                                            <ChevronRight className="w-3 h-3 flex-shrink-0" />
-                                            <span className="truncate">
-                                                {segment}
-                                            </span>
-                                        </div>
-                                    )
-                                })}
+                            {/* Breadcrumb Navigation */}
+                            <div className="mt-2">
+                                <Breadcrumb>
+                                    <BreadcrumbList className="gap-0 sm:gap-1">
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink
+                                                className="flex items-center gap-1 cursor-pointer hover:text-foreground hover:shadow-sm transition-shadow duration-200 rounded px-1 py-0.5"
+                                                onClick={handleGoHome}
+                                            >
+                                                <Home className="w-3.5 h-3.5" />
+                                            </BreadcrumbLink>
+                                        </BreadcrumbItem>
+                                        {pathSegments.flatMap(
+                                            (segment, index) => {
+                                                const isLast =
+                                                    index ===
+                                                    pathSegments.length - 1
+                                                const absolutePath =
+                                                    constructBreadcrumbPath(
+                                                        index,
+                                                    )
+
+                                                const elements = [
+                                                    <BreadcrumbItem
+                                                        key={`item-${absolutePath}`}
+                                                    >
+                                                        {isLast ? (
+                                                            <BreadcrumbPage className="max-w-32 truncate">
+                                                                {segment}
+                                                            </BreadcrumbPage>
+                                                        ) : (
+                                                            <BreadcrumbLink
+                                                                className="max-w-32 truncate cursor-pointer hover:text-foreground hover:shadow-sm transition-shadow duration-200 rounded px-1 py-0.5"
+                                                                onClick={() =>
+                                                                    handleDirectoryClick(
+                                                                        absolutePath,
+                                                                    )
+                                                                }
+                                                            >
+                                                                {segment}
+                                                            </BreadcrumbLink>
+                                                        )}
+                                                    </BreadcrumbItem>,
+                                                ]
+
+                                                if (!isLast) {
+                                                    elements.push(
+                                                        <BreadcrumbSeparator
+                                                            key={`sep-${absolutePath}`}
+                                                        >
+                                                            /
+                                                        </BreadcrumbSeparator>,
+                                                    )
+                                                }
+
+                                                return elements
+                                            },
+                                        )}
+                                    </BreadcrumbList>
+                                </Breadcrumb>
                             </div>
                         </div>
 
@@ -257,7 +356,7 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                             {loading && (
                                 <div className="flex items-center justify-center h-32">
                                     <div className="text-sm text-muted-foreground">
-                                        Loading...
+                                        <Loader2 className="w-4 h-4 animate-spin mr-2 inline-block" />
                                     </div>
                                 </div>
                             )}

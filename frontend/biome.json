@@ -10,6 +10,7 @@
     "includes": [
       "src/**/*.{js,jsx,ts,tsx,json,md,html,css}",
       "!src/client",
+      "!src/components/ui",
       "!src/routeTree.gen.ts"
     ]
   },
