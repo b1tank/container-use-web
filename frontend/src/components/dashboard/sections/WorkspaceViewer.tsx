@@ -1,3 +1,4 @@
+import { useSearch } from "@tanstack/react-router"
 import {
     ArrowUp,
     ChevronRight,
@@ -83,6 +84,8 @@ function formatFileSize(bytes: number): string {
 }
 
 export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
+    const searchParams = useSearch({ from: "/" })
+
     const [currentPath, setCurrentPath] = useState<string>("")
     const [directoryData, setDirectoryData] =
         useState<GetApiV1FilesResponse | null>(null)
@@ -90,36 +93,76 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
     const [error, setError] = useState<string | null>(null)
     const [selectedPath, setSelectedPath] = useState<string>()
 
-    const fetchDirectory = useCallback(async (path?: string) => {
-        setLoading(true)
-        setError(null)
+    // Function to update URL with new folder (preserving unescaped slashes)
+    const updateUrlFolder = useCallback((folderPath?: string) => {
+        const url = new URL(window.location.href)
 
-        try {
-            const response = await DefaultService.getApiV1Files({ path })
-            setDirectoryData(response)
-            setCurrentPath(response.path)
-        } catch (err) {
-            console.error("Failed to fetch directory:", err)
-            setError(
-                "Failed to load directory. Please check the path and try again.",
-            )
-        } finally {
-            setLoading(false)
+        if (folderPath) {
+            url.searchParams.set("folder", folderPath)
+        } else {
+            url.searchParams.delete("folder")
         }
+
+        // Replace encoded slashes with unescaped ones for better readability
+        const updatedUrl = url.toString().replace(/%2F/g, "/")
+
+        // Use replaceState to avoid cluttering browser history
+        window.history.replaceState(null, "", updatedUrl)
     }, [])
 
-    // Load initial folder or home directory on mount
+    const fetchDirectory = useCallback(
+        async (path?: string, updateUrl = true) => {
+            setLoading(true)
+            setError(null)
+
+            try {
+                const response = await DefaultService.getApiV1Files({ path })
+                setDirectoryData(response)
+                setCurrentPath(response.path)
+
+                // Update URL if requested (default true)
+                if (updateUrl) {
+                    updateUrlFolder(response.path)
+                }
+            } catch (err) {
+                console.error("Failed to fetch directory:", err)
+                setError(
+                    "Failed to load directory. Please check the path and try again.",
+                )
+            } finally {
+                setLoading(false)
+            }
+        },
+        [updateUrlFolder],
+    )
+
+    // Load initial folder from URL or prop on mount
     useEffect(() => {
-        fetchDirectory(initialFolder)
-    }, [fetchDirectory, initialFolder])
+        // Priority: URL folder parameter > initialFolder prop > home directory
+        const targetFolder = searchParams.folder || initialFolder
+        // Don't update URL if we're already loading from URL parameter
+        const shouldUpdateUrl = !searchParams.folder && !!initialFolder
+        fetchDirectory(targetFolder, shouldUpdateUrl)
+    }, [fetchDirectory, initialFolder, searchParams.folder])
+
+    // Sync with URL folder parameter changes (when user navigates via URL/back button)
+    useEffect(() => {
+        // Only sync if the URL folder differs from current path
+        if (searchParams.folder && searchParams.folder !== currentPath) {
+            fetchDirectory(searchParams.folder, false) // Don't update URL since it's already set
+        } else if (!searchParams.folder && currentPath) {
+            // If URL has no folder but we have a current path, go to home
+            fetchDirectory(undefined, false)
+        }
+    }, [searchParams.folder, currentPath, fetchDirectory])
 
     const handleRefresh = () => {
-        fetchDirectory(currentPath)
+        fetchDirectory(currentPath, false) // Don't update URL on refresh
     }
 
     const handleDirectoryClick = (path: string) => {
         setSelectedPath(path)
-        fetchDirectory(path)
+        fetchDirectory(path) // This will update URL
     }
 
     const handleGoToParent = () => {
@@ -130,7 +173,7 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
 
     const handleGoHome = () => {
         setSelectedPath(undefined)
-        fetchDirectory() // This will fetch the default home directory
+        fetchDirectory() // This will fetch home directory and update URL
     }
 
     const pathSegments = currentPath.split("/").filter(Boolean)
@@ -148,11 +191,6 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                     <span className="text-sm font-semibold truncate">
                                         Explorer
                                     </span>
-                                    {initialFolder && (
-                                        <span className="text-xs text-muted-foreground ml-2 truncate hidden sm:inline">
-                                            (starting from: {initialFolder})
-                                        </span>
-                                    )}
                                 </div>
                                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                                     <Button

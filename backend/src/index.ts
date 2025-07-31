@@ -1,3 +1,4 @@
+import * as os from "node:os";
 import process from "node:process";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
@@ -7,7 +8,8 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { environments } from "./routes/environments.js";
 import { files } from "./routes/files.js";
-import { handleOpenTerminal } from "./utils/terminal.js";
+import { CLI_COMMANDS, DEFAULT_CLI_PATH } from "./utils/constants.js";
+import { handleTerminal } from "./utils/terminal.js";
 
 const app = new OpenAPIHono();
 
@@ -24,16 +26,16 @@ app.use(
 
 // WebSocket route for terminal
 app.get(
-	"/ws/v1/terminal",
+	"/api/v1/terminal",
 	upgradeWebSocket((c) => ({
 		onOpen: (event, ws) => {
 			console.log(`Terminal WebSocket connection opened`);
 			if (ws.raw) {
-				handleOpenTerminal(ws.raw);
+				handleTerminal(ws.raw);
 			}
 		},
 		onMessage: (event, ws) => {
-			// Message handling is done in handleTerminalConnection
+			// Message handling is done in handleTerminal
 		},
 		onClose: (event, ws) => {
 			console.log(`Terminal WebSocket connection closed`);
@@ -42,6 +44,87 @@ app.get(
 			console.error("Terminal WebSocket error:", event);
 		},
 	})),
+);
+
+// WebSocket route for environment-specific terminal
+app.get(
+	"/api/v1/environments/:id/terminal",
+	upgradeWebSocket((c) => {
+		const environmentId = c.req.param("id");
+		const folder = c.req.query("folder");
+		const cli = c.req.query("cli");
+
+		// Get the folder parameter from query string, default to home directory
+		const workingDir = folder || os.homedir();
+		// Get the CLI command path from query string, default to constant
+		const cliPath = cli || DEFAULT_CLI_PATH;
+
+		return {
+			onOpen: (event, ws) => {
+				console.log(
+					`Environment terminal WebSocket connection opened for environment: ${environmentId}`,
+				);
+				if (ws.raw) {
+					handleTerminal(ws.raw, {
+						command: CLI_COMMANDS.TERMINAL,
+						environmentId,
+						workingDir,
+						cliPath,
+					});
+				}
+			},
+			onMessage: (event, ws) => {
+				// Message handling is done in handleTerminal
+			},
+			onClose: (event, ws) => {
+				console.log(
+					`Environment terminal WebSocket connection closed for environment: ${environmentId}`,
+				);
+			},
+			onError: (event, ws) => {
+				console.error(
+					`Environment terminal WebSocket error for environment ${environmentId}:`,
+					event,
+				);
+			},
+		};
+	}),
+);
+
+// WebSocket route for watch
+app.get(
+	"/api/v1/watch",
+	upgradeWebSocket((c) => {
+		const folder = c.req.query("folder");
+		const cli = c.req.query("cli");
+
+		// Get the folder parameter from query string, default to home directory
+		const workingDir = folder || os.homedir();
+		// Get the CLI command path from query string, default to constant
+		const cliPath = cli || DEFAULT_CLI_PATH;
+
+		return {
+			onOpen: (event, ws) => {
+				console.log(`Watch WebSocket connection opened`);
+				if (ws.raw) {
+					handleTerminal(ws.raw, {
+						command: CLI_COMMANDS.WATCH,
+						workingDir,
+						cliPath,
+					});
+				}
+			},
+			onMessage: (event, ws) => {
+				// Message handling is done in handleTerminal
+			},
+			onClose: (event, ws) => {
+				console.log(`Watch WebSocket connection closed`);
+			},
+			onError: (event, ws) => {
+				console.error("Watch WebSocket error:", event);
+			},
+		};
+	}),
 );
 
 // Apply base path to API routes only
@@ -82,6 +165,3 @@ const server = serve({
 
 // Inject WebSocket support
 injectWebSocket(server);
-
-console.log(`API at http://localhost:${port}`);
-console.log(`WebSocket at ws://localhost:${port}/ws/v1/terminal`);

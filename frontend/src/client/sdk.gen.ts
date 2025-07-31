@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1FilesData, GetApiV1FilesResponse } from './types.gen';
+import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, GetApiV1FilesData, GetApiV1FilesResponse } from './types.gen';
 
 export class DefaultService {
     /**
@@ -17,6 +17,56 @@ export class DefaultService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/environments',
+            query: {
+                folder: data.folder,
+                cli: data.cli
+            },
+            errors: {
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id Environment ID
+     * @param data.folder Working directory for the CLI command
+     * @param data.cli Path to the container-use CLI
+     * @returns EnvironmentLogs Environment logs
+     * @throws ApiError
+     */
+    public static getApiV1EnvironmentsByIdLogs(data: GetApiV1EnvironmentsByIdLogsData): CancelablePromise<GetApiV1EnvironmentsByIdLogsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/environments/{id}/logs',
+            path: {
+                id: data.id
+            },
+            query: {
+                folder: data.folder,
+                cli: data.cli
+            },
+            errors: {
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id Environment ID
+     * @param data.folder Working directory for the CLI command
+     * @param data.cli Path to the container-use CLI
+     * @returns EnvironmentDiff Environment diff
+     * @throws ApiError
+     */
+    public static getApiV1EnvironmentsByIdDiff(data: GetApiV1EnvironmentsByIdDiffData): CancelablePromise<GetApiV1EnvironmentsByIdDiffResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/environments/{id}/diff',
+            path: {
+                id: data.id
+            },
             query: {
                 folder: data.folder,
                 cli: data.cli

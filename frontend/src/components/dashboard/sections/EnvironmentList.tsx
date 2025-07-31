@@ -1,20 +1,20 @@
 import { useQuery } from "@tanstack/react-query"
-import { RefreshCw } from "lucide-react"
+import { FileText, GitCompare, RefreshCw, Terminal } from "lucide-react"
 import { DefaultService, type Environment } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
+type ViewType = "terminal" | "logs" | "diff"
+
 interface EnvironmentListProps {
-    selectedEnvironment: string | null
-    onSelectEnvironment: (id: string) => void
+    onViewAction: (environmentId: string, viewType: ViewType) => void
     folder?: string
     cli?: string
 }
 
 export function EnvironmentList({
-    selectedEnvironment,
-    onSelectEnvironment,
+    onViewAction,
     folder,
     cli,
 }: EnvironmentListProps) {
@@ -138,12 +138,7 @@ export function EnvironmentList({
                 {environments.map((env: Environment) => (
                     <Card
                         key={env.id}
-                        className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-                            selectedEnvironment === env.id
-                                ? "ring-2 ring-primary bg-primary/5"
-                                : "hover:bg-muted/50"
-                        }`}
-                        onClick={() => env.id && onSelectEnvironment(env.id)}
+                        className="p-3 transition-all hover:shadow-md hover:bg-muted/50"
                     >
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
@@ -157,6 +152,46 @@ export function EnvironmentList({
                             <div className="text-xs text-muted-foreground space-y-1">
                                 <div>Created: {env.created || "Unknown"}</div>
                                 <div>Updated: {env.updated || "Unknown"}</div>
+                            </div>
+                            {/* Action Icons */}
+                            <div className="flex justify-end gap-1 pt-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-primary/10"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        env.id &&
+                                            onViewAction(env.id, "terminal")
+                                    }}
+                                    title="Open Terminal"
+                                >
+                                    <Terminal className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-primary/10"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        env.id && onViewAction(env.id, "logs")
+                                    }}
+                                    title="Open Logs"
+                                >
+                                    <FileText className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-primary/10"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        env.id && onViewAction(env.id, "diff")
+                                    }}
+                                    title="Open Diff"
+                                >
+                                    <GitCompare className="h-3 w-3" />
+                                </Button>
                             </div>
                         </div>
                     </Card>

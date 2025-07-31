@@ -137,7 +137,7 @@
             connectBtn.disabled = true;
 
             // Use the WebSocket endpoint from your backend
-            const wsUrl = 'ws://localhost:8000/ws/v1/terminal';
+            const wsUrl = 'ws://localhost:8000/api/v1/terminal';
 
             try {
                 websocket = new WebSocket(wsUrl);
@@ -219,7 +219,7 @@
         // Initial welcome message
         term.writeln('\x1b[36mWebSocket Terminal Test\x1b[0m');
         term.writeln('\x1b[37mClick "Connect" to establish WebSocket connection\x1b[0m');
-        term.writeln('\x1b[37mEndpoint: ws://localhost:8000/ws/v1/terminal\x1b[0m');
+        term.writeln('\x1b[37mEndpoint: ws://localhost:8000/api/v1/terminal\x1b[0m');
     </script>
 </body>
 

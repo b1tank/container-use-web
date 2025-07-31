@@ -3,11 +3,14 @@ import {
     FileText,
     Folder,
     GitCompare,
+    Plug,
+    PlugZap,
     Server,
     Terminal,
 } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
     ResizableHandle,
@@ -19,7 +22,7 @@ import { DiffViewer } from "./sections/DiffViewer"
 import { EnvironmentList } from "./sections/EnvironmentList"
 import { LogViewer } from "./sections/LogViewer"
 import { TerminalViewer } from "./sections/TerminalViewer"
-import { WatchViewer } from "./sections/WatchViewer"
+import { WatchViewer, type WatchViewerRef } from "./sections/WatchViewer"
 import { WorkspaceViewer } from "./sections/WorkspaceViewer"
 
 interface ContainerUseDashboardProps {
@@ -27,13 +30,50 @@ interface ContainerUseDashboardProps {
     cli?: string
 }
 
+type ViewType = "terminal" | "logs" | "diff"
+
+interface ActiveViews {
+    terminal: string | null
+    logs: string | null
+    diff: string | null
+}
+
 export function ContainerUseDashboard({
     folder,
     cli,
 }: ContainerUseDashboardProps) {
-    const [selectedEnvironment, setSelectedEnvironment] = useState<
-        string | null
-    >(null)
+    const watchViewerRef = useRef<WatchViewerRef>(null)
+    const [watchStatus, setWatchStatus] = useState<{
+        status: "disconnected" | "connecting" | "connected" | "error"
+        isWatching: boolean
+    }>({
+        status: "disconnected",
+        isWatching: false,
+    })
+
+    const [activeViews, setActiveViews] = useState<ActiveViews>({
+        terminal: null,
+        logs: null,
+        diff: null,
+    })
+
+    const handleViewAction = (environmentId: string, viewType: ViewType) => {
+        setActiveViews((prev) => ({
+            ...prev,
+            [viewType]: prev[viewType] === environmentId ? null : environmentId,
+        }))
+    }
+
+    const handleWatchStatusChange = (
+        status: "disconnected" | "connecting" | "connected" | "error",
+        isWatching: boolean,
+    ) => {
+        setWatchStatus({ status, isWatching })
+    }
+
+    const handleToggleWatch = () => {
+        watchViewerRef.current?.toggleConnection()
+    }
 
     return (
         <div className="h-screen flex flex-col bg-background">
@@ -75,12 +115,12 @@ export function ContainerUseDashboard({
                                                 <Terminal className="h-5 w-5" />
                                                 Terminal
                                             </div>
-                                            {selectedEnvironment && (
+                                            {activeViews.terminal && (
                                                 <Badge
                                                     variant="outline"
                                                     className="text-xs"
                                                 >
-                                                    {selectedEnvironment}
+                                                    {activeViews.terminal}
                                                 </Badge>
                                             )}
                                         </CardTitle>
@@ -88,7 +128,9 @@ export function ContainerUseDashboard({
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
                                         <TerminalViewer
-                                            environmentId={selectedEnvironment}
+                                            environmentId={activeViews.terminal}
+                                            folder={folder}
+                                            cli={cli}
                                         />
                                     </CardContent>
                                 </Card>
@@ -116,12 +158,7 @@ export function ContainerUseDashboard({
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
                                         <EnvironmentList
-                                            selectedEnvironment={
-                                                selectedEnvironment
-                                            }
-                                            onSelectEnvironment={
-                                                setSelectedEnvironment
-                                            }
+                                            onViewAction={handleViewAction}
                                             folder={folder}
                                             cli={cli}
                                         />
@@ -135,14 +172,65 @@ export function ContainerUseDashboard({
                             <ResizablePanel defaultSize={25} minSize={15}>
                                 <Card className="h-full rounded-none border-l border-t border-r-0 border-b-0">
                                     <CardHeader>
-                                        <CardTitle className="text-lg flex items-center gap-2">
-                                            <Eye className="h-5 w-5" />
-                                            Watch
+                                        <CardTitle className="text-lg flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Eye className="h-5 w-5" />
+                                                Watch
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    onClick={handleToggleWatch}
+                                                    size="sm"
+                                                    variant={
+                                                        watchStatus.isWatching
+                                                            ? "destructive"
+                                                            : "default"
+                                                    }
+                                                    className="h-6 px-2 text-xs"
+                                                >
+                                                    {watchStatus.isWatching ? (
+                                                        <PlugZap className="h-3 w-3" />
+                                                    ) : (
+                                                        <Plug className="h-3 w-3" />
+                                                    )}
+                                                </Button>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={`text-xs ${
+                                                        watchStatus.status ===
+                                                        "connected"
+                                                            ? "bg-green-500/20 text-green-400 border-green-500/30"
+                                                            : watchStatus.status ===
+                                                                "connecting"
+                                                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                                                              : watchStatus.status ===
+                                                                  "error"
+                                                                ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                                                : "bg-gray-500/20 text-gray-400 border-gray-500/30"
+                                                    }`}
+                                                >
+                                                    {watchStatus.status ===
+                                                        "connected" && "🟢"}
+                                                    {watchStatus.status ===
+                                                        "connecting" && "🟡"}
+                                                    {watchStatus.status ===
+                                                        "error" && "🔴"}
+                                                    {watchStatus.status ===
+                                                        "disconnected" && "⚫"}
+                                                </Badge>
+                                            </div>
                                         </CardTitle>
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <WatchViewer />
+                                        <WatchViewer
+                                            ref={watchViewerRef}
+                                            folder={folder}
+                                            cli={cli}
+                                            onStatusChange={
+                                                handleWatchStatusChange
+                                            }
+                                        />
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>
@@ -158,12 +246,12 @@ export function ContainerUseDashboard({
                                                 <FileText className="h-5 w-5" />
                                                 Logs
                                             </div>
-                                            {selectedEnvironment && (
+                                            {activeViews.logs && (
                                                 <Badge
                                                     variant="outline"
                                                     className="text-xs"
                                                 >
-                                                    {selectedEnvironment}
+                                                    {activeViews.logs}
                                                 </Badge>
                                             )}
                                         </CardTitle>
@@ -171,7 +259,9 @@ export function ContainerUseDashboard({
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
                                         <LogViewer
-                                            environmentId={selectedEnvironment}
+                                            environmentId={activeViews.logs}
+                                            folder={folder}
+                                            cli={cli}
                                         />
                                     </CardContent>
                                 </Card>
@@ -188,12 +278,12 @@ export function ContainerUseDashboard({
                                                 <GitCompare className="h-5 w-5" />
                                                 Diff
                                             </div>
-                                            {selectedEnvironment && (
+                                            {activeViews.diff && (
                                                 <Badge
                                                     variant="outline"
                                                     className="text-xs"
                                                 >
-                                                    {selectedEnvironment}
+                                                    {activeViews.diff}
                                                 </Badge>
                                             )}
                                         </CardTitle>
@@ -201,7 +291,9 @@ export function ContainerUseDashboard({
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
                                         <DiffViewer
-                                            environmentId={selectedEnvironment}
+                                            environmentId={activeViews.diff}
+                                            folder={folder}
+                                            cli={cli}
                                         />
                                     </CardContent>
                                 </Card>

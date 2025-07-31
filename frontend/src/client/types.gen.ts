@@ -7,7 +7,19 @@ export type Environment = {
     updated: string;
 };
 
+export type EnvironmentDiff = {
+    environmentId: string;
+    diff: string;
+    timestamp: string;
+};
+
 export type EnvironmentList = Array<Environment>;
+
+export type EnvironmentLogs = {
+    environmentId: string;
+    logs: string;
+    timestamp: string;
+};
 
 export type Error = {
     error: string;
@@ -31,6 +43,40 @@ export type GetApiV1EnvironmentsData = {
 };
 
 export type GetApiV1EnvironmentsResponse = (EnvironmentList);
+
+export type GetApiV1EnvironmentsByIdLogsData = {
+    /**
+     * Path to the container-use CLI
+     */
+    cli?: string;
+    /**
+     * Working directory for the CLI command
+     */
+    folder?: string;
+    /**
+     * Environment ID
+     */
+    id: string;
+};
+
+export type GetApiV1EnvironmentsByIdLogsResponse = (EnvironmentLogs);
+
+export type GetApiV1EnvironmentsByIdDiffData = {
+    /**
+     * Path to the container-use CLI
+     */
+    cli?: string;
+    /**
+     * Working directory for the CLI command
+     */
+    folder?: string;
+    /**
+     * Environment ID
+     */
+    id: string;
+};
+
+export type GetApiV1EnvironmentsByIdDiffResponse = (EnvironmentDiff);
 
 export type GetApiV1FilesData = {
     /**
