@@ -73,11 +73,6 @@ export const WatchViewer = forwardRef<WatchViewerRef, WatchViewerProps>(
             }
             window.addEventListener("resize", handleResize)
 
-            // Show initial message
-            terminal.writeln(
-                '\x1b[33mClick "Connect" to start watching environment activity...\x1b[0m',
-            )
-
             return () => {
                 // Clean up WebSocket connection
                 if (websocketRef.current) {
@@ -188,6 +183,17 @@ export const WatchViewer = forwardRef<WatchViewerRef, WatchViewerProps>(
             }),
             [handleToggleConnection, isWatching, connectionStatus],
         )
+
+        // Show simple text message when not watching
+        if (!isWatching && connectionStatus === "disconnected") {
+            return (
+                <div className="flex items-center justify-center h-full">
+                    <div className="text-sm text-muted-foreground">
+                        Click "Connect" to start watching environment activity
+                    </div>
+                </div>
+            )
+        }
 
         return (
             <div className="h-full bg-black relative">
