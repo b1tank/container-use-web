@@ -93,7 +93,7 @@ app.get(
 
 // WebSocket route for watch
 app.get(
-	"/api/v1/watch",
+	"/api/v1/environments/watch",
 	upgradeWebSocket((c) => {
 		const folder = c.req.query("folder");
 		const cli = c.req.query("cli");

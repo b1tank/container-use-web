@@ -4,12 +4,10 @@ import {
     FileText,
     Folder,
     GitCompare,
-    Plug,
-    PlugZap,
     Server,
     Terminal,
 } from "lucide-react"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,7 +21,7 @@ import { DiffViewer } from "./sections/DiffViewer"
 import { EnvironmentList } from "./sections/EnvironmentList"
 import { LogViewer } from "./sections/LogViewer"
 import { TerminalViewer } from "./sections/TerminalViewer"
-import { WatchViewer, type WatchViewerRef } from "./sections/WatchViewer"
+import { WatchViewer } from "./sections/WatchViewer"
 import { WorkspaceViewer } from "./sections/WorkspaceViewer"
 
 interface ContainerUseDashboardProps {
@@ -44,14 +42,6 @@ export function ContainerUseDashboard({
     cli,
 }: ContainerUseDashboardProps) {
     const navigate = useNavigate()
-    const watchViewerRef = useRef<WatchViewerRef>(null)
-    const [watchStatus, setWatchStatus] = useState<{
-        status: "disconnected" | "connecting" | "connected" | "error"
-        isWatching: boolean
-    }>({
-        status: "disconnected",
-        isWatching: false,
-    })
 
     const [activeViews, setActiveViews] = useState<ActiveViews>({
         terminal: null,
@@ -76,16 +66,6 @@ export function ContainerUseDashboard({
                 [viewType]:
                     prev[viewType] === environmentId ? null : environmentId,
             }))
-        },
-        [],
-    )
-
-    const handleWatchStatusChange = useCallback(
-        (
-            status: "disconnected" | "connecting" | "connected" | "error",
-            isWatching: boolean,
-        ) => {
-            setWatchStatus({ status, isWatching })
         },
         [],
     )
@@ -146,10 +126,6 @@ export function ContainerUseDashboard({
         },
         [navigate, cli],
     )
-
-    const handleToggleWatch = () => {
-        watchViewerRef.current?.toggleConnection()
-    }
 
     // Determine if views should be disabled (no environments available and not loading)
     const shouldDisableViews =
@@ -310,56 +286,6 @@ export function ContainerUseDashboard({
                                                     Watch
                                                 </span>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    onClick={handleToggleWatch}
-                                                    size="sm"
-                                                    variant={
-                                                        watchStatus.isWatching
-                                                            ? "destructive"
-                                                            : "default"
-                                                    }
-                                                    className="h-6 px-2 text-xs"
-                                                    disabled={
-                                                        shouldDisableViews
-                                                    }
-                                                    title={
-                                                        shouldDisableViews
-                                                            ? "Watch requires at least one environment"
-                                                            : undefined
-                                                    }
-                                                >
-                                                    {watchStatus.isWatching ? (
-                                                        <PlugZap className="h-3 w-3" />
-                                                    ) : (
-                                                        <Plug className="h-3 w-3" />
-                                                    )}
-                                                </Button>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`text-xs ${
-                                                        watchStatus.status ===
-                                                        "connected"
-                                                            ? "bg-green-500/20 text-green-400 border-green-500/30"
-                                                            : watchStatus.status ===
-                                                                "connecting"
-                                                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                                                              : watchStatus.status ===
-                                                                  "error"
-                                                                ? "bg-red-500/20 text-red-400 border-red-500/30"
-                                                                : "bg-gray-500/20 text-gray-400 border-gray-500/30"
-                                                    }`}
-                                                >
-                                                    {watchStatus.status ===
-                                                        "connected" && "🟢"}
-                                                    {watchStatus.status ===
-                                                        "connecting" && "🟡"}
-                                                    {watchStatus.status ===
-                                                        "error" && "🔴"}
-                                                    {watchStatus.status ===
-                                                        "disconnected" && "⚫"}
-                                                </Badge>
-                                            </div>
                                         </CardTitle>
                                     </CardHeader>
                                     <Separator />
@@ -381,12 +307,8 @@ export function ContainerUseDashboard({
                                             </div>
                                         ) : (
                                             <WatchViewer
-                                                ref={watchViewerRef}
                                                 folder={folder}
                                                 cli={cli}
-                                                onStatusChange={
-                                                    handleWatchStatusChange
-                                                }
                                             />
                                         )}
                                     </CardContent>
