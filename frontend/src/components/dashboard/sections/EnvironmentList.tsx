@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { FileText, GitCompare, RefreshCw, Terminal } from "lucide-react"
+import { useEffect } from "react"
 import { DefaultService, type Environment } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,12 +12,18 @@ interface EnvironmentListProps {
     onViewAction: (environmentId: string, viewType: ViewType) => void
     folder?: string
     cli?: string
+    onEnvironmentStatusChange?: (
+        hasEnvironments: boolean,
+        isLoading: boolean,
+        hasError: boolean,
+    ) => void
 }
 
 export function EnvironmentList({
     onViewAction,
     folder,
     cli,
+    onEnvironmentStatusChange,
 }: EnvironmentListProps) {
     const {
         data: environments,
@@ -38,6 +45,15 @@ export function EnvironmentList({
         refetchOnWindowFocus: false, // Prevent unnecessary refetches
     })
 
+    // Notify parent component of environment status changes
+    useEffect(() => {
+        if (onEnvironmentStatusChange) {
+            const hasEnvironments = !!(environments && environments.length > 0)
+            const hasError = !!error
+            onEnvironmentStatusChange(hasEnvironments, isLoading, hasError)
+        }
+    }, [environments, isLoading, error, onEnvironmentStatusChange])
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -52,7 +68,7 @@ export function EnvironmentList({
         return (
             <div className="flex items-center justify-center h-full p-4">
                 <div className="text-center space-y-4 max-w-sm">
-                    <div className="text-2xl">📁</div>
+                    <div className="text-2xl">🌎</div>
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium">
                             No Environments Found

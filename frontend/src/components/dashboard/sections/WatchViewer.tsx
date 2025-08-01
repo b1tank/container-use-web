@@ -188,8 +188,14 @@ export const WatchViewer = forwardRef<WatchViewerRef, WatchViewerProps>(
         if (!isWatching && connectionStatus === "disconnected") {
             return (
                 <div className="flex items-center justify-center h-full">
-                    <div className="text-sm text-muted-foreground">
-                        Click "Connect" to start watching environment activity
+                    <div className="text-center space-y-2">
+                        <div className="text-2xl text-muted-foreground">👁️</div>
+                        <div className="text-sm text-muted-foreground">
+                            Ready to Watch
+                        </div>
+                        <div className="text-xs text-muted-foreground/70">
+                            Click connect to start watching environment activity
+                        </div>
                     </div>
                 </div>
             )

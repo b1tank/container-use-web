@@ -57,6 +57,16 @@ export function ContainerUseDashboard({
         diff: null,
     })
 
+    const [environmentStatus, setEnvironmentStatus] = useState<{
+        hasEnvironments: boolean
+        isLoading: boolean
+        hasError: boolean
+    }>({
+        hasEnvironments: false,
+        isLoading: true,
+        hasError: false,
+    })
+
     const handleViewAction = (environmentId: string, viewType: ViewType) => {
         setActiveViews((prev) => ({
             ...prev,
@@ -71,9 +81,21 @@ export function ContainerUseDashboard({
         setWatchStatus({ status, isWatching })
     }
 
+    const handleEnvironmentStatusChange = (
+        hasEnvironments: boolean,
+        isLoading: boolean,
+        hasError: boolean,
+    ) => {
+        setEnvironmentStatus({ hasEnvironments, isLoading, hasError })
+    }
+
     const handleToggleWatch = () => {
         watchViewerRef.current?.toggleConnection()
     }
+
+    // Determine if views should be disabled (no environments available and not loading)
+    const shouldDisableViews =
+        !environmentStatus.hasEnvironments && !environmentStatus.isLoading
 
     return (
         <div className="h-screen flex flex-col bg-background">
@@ -108,12 +130,24 @@ export function ContainerUseDashboard({
 
                             {/* Bottom: Terminal */}
                             <ResizablePanel defaultSize={50} minSize={30}>
-                                <Card className="h-full rounded-none border-t border-l-0 border-r-0 border-b-0">
+                                <Card
+                                    className={`h-full rounded-none border-t border-l-0 border-r-0 border-b-0 ${shouldDisableViews ? "opacity-50" : ""}`}
+                                >
                                     <CardHeader>
                                         <CardTitle className="text-lg flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <Terminal className="h-5 w-5" />
-                                                Terminal
+                                                <Terminal
+                                                    className={`h-5 w-5 ${shouldDisableViews ? "text-muted-foreground" : ""}`}
+                                                />
+                                                <span
+                                                    className={
+                                                        shouldDisableViews
+                                                            ? "text-muted-foreground"
+                                                            : ""
+                                                    }
+                                                >
+                                                    Terminal
+                                                </span>
                                             </div>
                                             {activeViews.terminal && (
                                                 <Badge
@@ -127,11 +161,30 @@ export function ContainerUseDashboard({
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <TerminalViewer
-                                            environmentId={activeViews.terminal}
-                                            folder={folder}
-                                            cli={cli}
-                                        />
+                                        {shouldDisableViews ? (
+                                            <div className="flex items-center justify-center h-full bg-black/10">
+                                                <div className="text-center space-y-2">
+                                                    <div className="text-2xl text-muted-foreground">
+                                                        💻
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        No Environments
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground/70">
+                                                        Select an environment to
+                                                        open terminal
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <TerminalViewer
+                                                environmentId={
+                                                    activeViews.terminal
+                                                }
+                                                folder={folder}
+                                                cli={cli}
+                                            />
+                                        )}
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>
@@ -161,6 +214,9 @@ export function ContainerUseDashboard({
                                             onViewAction={handleViewAction}
                                             folder={folder}
                                             cli={cli}
+                                            onEnvironmentStatusChange={
+                                                handleEnvironmentStatusChange
+                                            }
                                         />
                                     </CardContent>
                                 </Card>
@@ -170,12 +226,24 @@ export function ContainerUseDashboard({
 
                             {/* Watch Section */}
                             <ResizablePanel defaultSize={25} minSize={15}>
-                                <Card className="h-full rounded-none border-l border-t border-r-0 border-b-0">
+                                <Card
+                                    className={`h-full rounded-none border-l border-t border-r-0 border-b-0 ${shouldDisableViews ? "opacity-50" : ""}`}
+                                >
                                     <CardHeader>
                                         <CardTitle className="text-lg flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <Eye className="h-5 w-5" />
-                                                Watch
+                                                <Eye
+                                                    className={`h-5 w-5 ${shouldDisableViews ? "text-muted-foreground" : ""}`}
+                                                />
+                                                <span
+                                                    className={
+                                                        shouldDisableViews
+                                                            ? "text-muted-foreground"
+                                                            : ""
+                                                    }
+                                                >
+                                                    Watch
+                                                </span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <Button
@@ -187,6 +255,14 @@ export function ContainerUseDashboard({
                                                             : "default"
                                                     }
                                                     className="h-6 px-2 text-xs"
+                                                    disabled={
+                                                        shouldDisableViews
+                                                    }
+                                                    title={
+                                                        shouldDisableViews
+                                                            ? "Watch requires at least one environment"
+                                                            : undefined
+                                                    }
                                                 >
                                                     {watchStatus.isWatching ? (
                                                         <PlugZap className="h-3 w-3" />
@@ -223,14 +299,31 @@ export function ContainerUseDashboard({
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <WatchViewer
-                                            ref={watchViewerRef}
-                                            folder={folder}
-                                            cli={cli}
-                                            onStatusChange={
-                                                handleWatchStatusChange
-                                            }
-                                        />
+                                        {shouldDisableViews ? (
+                                            <div className="flex items-center justify-center h-full bg-muted/20">
+                                                <div className="text-center space-y-2">
+                                                    <div className="text-2xl text-muted-foreground">
+                                                        👁️
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        No Environments
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground/70">
+                                                        Create an environment to
+                                                        enable watch
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <WatchViewer
+                                                ref={watchViewerRef}
+                                                folder={folder}
+                                                cli={cli}
+                                                onStatusChange={
+                                                    handleWatchStatusChange
+                                                }
+                                            />
+                                        )}
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>
@@ -239,12 +332,24 @@ export function ContainerUseDashboard({
 
                             {/* Log Section */}
                             <ResizablePanel defaultSize={25} minSize={15}>
-                                <Card className="h-full rounded-none border-l border-t border-r-0 border-b-0">
+                                <Card
+                                    className={`h-full rounded-none border-l border-t border-r-0 border-b-0 ${shouldDisableViews ? "opacity-50" : ""}`}
+                                >
                                     <CardHeader>
                                         <CardTitle className="text-lg flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <FileText className="h-5 w-5" />
-                                                Logs
+                                                <FileText
+                                                    className={`h-5 w-5 ${shouldDisableViews ? "text-muted-foreground" : ""}`}
+                                                />
+                                                <span
+                                                    className={
+                                                        shouldDisableViews
+                                                            ? "text-muted-foreground"
+                                                            : ""
+                                                    }
+                                                >
+                                                    Logs
+                                                </span>
                                             </div>
                                             {activeViews.logs && (
                                                 <Badge
@@ -258,11 +363,28 @@ export function ContainerUseDashboard({
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <LogViewer
-                                            environmentId={activeViews.logs}
-                                            folder={folder}
-                                            cli={cli}
-                                        />
+                                        {shouldDisableViews ? (
+                                            <div className="flex items-center justify-center h-full bg-muted/20">
+                                                <div className="text-center space-y-2">
+                                                    <div className="text-2xl text-muted-foreground">
+                                                        📋
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        No Environments
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground/70">
+                                                        Select an environment to
+                                                        view logs
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <LogViewer
+                                                environmentId={activeViews.logs}
+                                                folder={folder}
+                                                cli={cli}
+                                            />
+                                        )}
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>
@@ -271,12 +393,24 @@ export function ContainerUseDashboard({
 
                             {/* Diff Section */}
                             <ResizablePanel defaultSize={25} minSize={15}>
-                                <Card className="h-full rounded-none border-l border-t border-r-0 border-b-0">
+                                <Card
+                                    className={`h-full rounded-none border-l border-t border-r-0 border-b-0 ${shouldDisableViews ? "opacity-50" : ""}`}
+                                >
                                     <CardHeader>
                                         <CardTitle className="text-lg flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <GitCompare className="h-5 w-5" />
-                                                Diff
+                                                <GitCompare
+                                                    className={`h-5 w-5 ${shouldDisableViews ? "text-muted-foreground" : ""}`}
+                                                />
+                                                <span
+                                                    className={
+                                                        shouldDisableViews
+                                                            ? "text-muted-foreground"
+                                                            : ""
+                                                    }
+                                                >
+                                                    Diff
+                                                </span>
                                             </div>
                                             {activeViews.diff && (
                                                 <Badge
@@ -290,11 +424,28 @@ export function ContainerUseDashboard({
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <DiffViewer
-                                            environmentId={activeViews.diff}
-                                            folder={folder}
-                                            cli={cli}
-                                        />
+                                        {shouldDisableViews ? (
+                                            <div className="flex items-center justify-center h-full bg-muted/20">
+                                                <div className="text-center space-y-2">
+                                                    <div className="text-2xl text-muted-foreground">
+                                                        🔍
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        No Environments
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground/70">
+                                                        Select an environment to
+                                                        view diffs
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <DiffViewer
+                                                environmentId={activeViews.diff}
+                                                folder={folder}
+                                                cli={cli}
+                                            />
+                                        )}
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>

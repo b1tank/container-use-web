@@ -90,8 +90,14 @@ export function DiffViewer({ environmentId, folder, cli }: DiffViewerProps) {
     if (!environmentId) {
         return (
             <div className="h-full flex items-center justify-center">
-                <div className="text-sm text-muted-foreground">
-                    View diff for an environment
+                <div className="text-center space-y-2">
+                    <div className="text-2xl text-muted-foreground">🔍</div>
+                    <div className="text-sm text-muted-foreground">
+                        No Environment Selected
+                    </div>
+                    <div className="text-xs text-muted-foreground/70">
+                        Select an environment to view diffs
+                    </div>
                 </div>
             </div>
         )

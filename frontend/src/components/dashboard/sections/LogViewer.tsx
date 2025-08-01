@@ -58,8 +58,14 @@ export function LogViewer({ environmentId, folder, cli }: LogViewerProps) {
     if (!environmentId) {
         return (
             <div className="h-full flex items-center justify-center">
-                <div className="text-sm text-muted-foreground">
-                    View logs for an environment
+                <div className="text-center space-y-2">
+                    <div className="text-2xl text-muted-foreground">📋</div>
+                    <div className="text-sm text-muted-foreground">
+                        No Environment Selected
+                    </div>
+                    <div className="text-xs text-muted-foreground/70">
+                        Select an environment to view logs
+                    </div>
                 </div>
             </div>
         )

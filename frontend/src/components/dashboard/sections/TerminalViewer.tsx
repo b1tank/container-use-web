@@ -143,8 +143,14 @@ export function TerminalViewer({
     if (!environmentId) {
         return (
             <div className="flex items-center justify-center h-full">
-                <div className="text-sm text-muted-foreground">
-                    Open a terminal for an environment
+                <div className="text-center space-y-2">
+                    <div className="text-2xl text-muted-foreground">💻</div>
+                    <div className="text-sm text-muted-foreground">
+                        No Environment Selected
+                    </div>
+                    <div className="text-xs text-muted-foreground/70">
+                        Select an environment to open terminal
+                    </div>
                 </div>
             </div>
         )
