@@ -28,7 +28,7 @@ export const environmentListRoute = createRoute({
 						in: "query",
 					},
 					example: "/Users/b1tank/hello",
-					description: "Working directory for the CLI command",
+					description: "Working folder for the CLI command",
 				}),
 			cli: z
 				.string()
@@ -88,7 +88,7 @@ export const environmentLogsRoute = createRoute({
 						in: "query",
 					},
 					example: "/Users/b1tank/hello",
-					description: "Working directory for the CLI command",
+					description: "Working folder for the CLI command",
 				}),
 			cli: z
 				.string()
@@ -148,7 +148,7 @@ export const environmentDiffRoute = createRoute({
 						in: "query",
 					},
 					example: "/Users/b1tank/hello",
-					description: "Working directory for the CLI command",
+					description: "Working folder for the CLI command",
 				}),
 			cli: z
 				.string()
@@ -189,7 +189,7 @@ export const environments = new OpenAPIHono();
 environments.openapi(environmentListRoute, async (c) => {
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home directory
+	// Get the folder parameter from query string, default to home folder
 	const workingDir = folder || os.homedir();
 	// Get the CLI command path from query string, default to constant
 	const cliPath = cli || DEFAULT_CLI_PATH;
@@ -232,7 +232,7 @@ environments.openapi(environmentLogsRoute, async (c) => {
 	const { id } = c.req.valid("param");
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home directory
+	// Get the folder parameter from query string, default to home folder
 	const workingDir = folder || os.homedir();
 	// Get the CLI command path from query string, default to constant
 	const cliPath = cli || DEFAULT_CLI_PATH;
@@ -283,7 +283,7 @@ environments.openapi(environmentDiffRoute, async (c) => {
 	const { id } = c.req.valid("param");
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home directory
+	// Get the folder parameter from query string, default to home folder
 	const workingDir = folder || os.homedir();
 	// Get the CLI command path from query string, default to constant
 	const cliPath = cli || DEFAULT_CLI_PATH;

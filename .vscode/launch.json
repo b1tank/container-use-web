@@ -3,25 +3,24 @@
     "configurations": [
         {
             "name": "backend",
+            "type": "node-terminal",
             "request": "launch",
-            "runtimeArgs": [
-                "run",
-                "dev"
-            ],
-            "cwd": "${workspaceFolder}/backend",
-            "runtimeExecutable": "pnpm",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
+            "command": "pnpm run dev",
+            "cwd": "${workspaceFolder}/backend"
         },
         {
             "name": "frontend",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "pnpm run dev",
+            "cwd": "${workspaceFolder}/frontend"
+        },
+        {
+            "name": "frontend: browser",
             "type": "chrome",
             "request": "launch",
             "url": "http://localhost:5173?folder=/Users/b1tank/hello",
             "webRoot": "${workspaceFolder}/frontend",
-            "preLaunchTask": "start frontend dev server"
         }
     ]
 }

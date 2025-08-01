@@ -54,7 +54,7 @@ app.get(
 		const folder = c.req.query("folder");
 		const cli = c.req.query("cli");
 
-		// Get the folder parameter from query string, default to home directory
+		// Get the folder parameter from query string, default to home folder
 		const workingDir = folder || os.homedir();
 		// Get the CLI command path from query string, default to constant
 		const cliPath = cli || DEFAULT_CLI_PATH;
@@ -98,7 +98,7 @@ app.get(
 		const folder = c.req.query("folder");
 		const cli = c.req.query("cli");
 
-		// Get the folder parameter from query string, default to home directory
+		// Get the folder parameter from query string, default to home folder
 		const workingDir = folder || os.homedir();
 		// Get the CLI command path from query string, default to constant
 		const cliPath = cli || DEFAULT_CLI_PATH;

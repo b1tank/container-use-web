@@ -1,4 +1,3 @@
-import { useSearch } from "@tanstack/react-router"
 import {
     ArrowUp,
     ChevronRight,
@@ -8,7 +7,7 @@ import {
     Loader2,
     RefreshCcw,
 } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { DefaultService, type GetApiV1FilesResponse } from "@/client"
 import {
     Breadcrumb,
@@ -28,7 +27,7 @@ import {
 interface FileEntry {
     name: string
     path: string
-    type: "file" | "directory"
+    type: "file" | "folder"
     size?: number
     modified?: string
 }
@@ -36,21 +35,21 @@ interface FileEntry {
 interface FileTreeProps {
     entry: FileEntry
     level: number
-    onDirectoryClick: (path: string) => void
-    selectedPath?: string
+    onFolderClick: (path: string) => void
+    currentFolder?: string
 }
 
 function FileTree({
     entry,
     level,
-    onDirectoryClick,
-    selectedPath,
+    onFolderClick,
+    currentFolder,
 }: FileTreeProps) {
-    const isSelected = selectedPath === entry.path
+    const isSelected = currentFolder === entry.path
 
     const handleClick = () => {
-        if (entry.type === "directory") {
-            onDirectoryClick(entry.path)
+        if (entry.type === "folder") {
+            onFolderClick(entry.path)
         }
     }
 
@@ -63,7 +62,7 @@ function FileTree({
             style={{ paddingLeft: `${level * 16 + 8}px` }}
             onClick={handleClick}
         >
-            {entry.type === "directory" ? (
+            {entry.type === "folder" ? (
                 <>
                     <ChevronRight className="w-3 h-3 mr-1 text-muted-foreground" />
                     <FolderIcon className="w-4 h-4 mr-2 text-blue-500" />
@@ -93,148 +92,119 @@ function formatFileSize(bytes: number): string {
 }
 
 export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
-    const searchParams = useSearch({ from: "/" })
-
-    const [currentPath, setCurrentPath] = useState<string>("")
-    const [directoryData, setDirectoryData] =
+    const [currentFolder, setCurrentFolder] = useState<string>(
+        initialFolder || "",
+    )
+    const [currentFolderData, setCurrentFolderData] =
         useState<GetApiV1FilesResponse | null>(null)
-    const [loading, setLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false) // Start with loading state
     const [error, setError] = useState<string | null>(null)
-    const [selectedPath, setSelectedPath] = useState<string>()
 
-    // Function to update URL with new folder (preserving unescaped slashes)
-    const updateUrlFolder = useCallback((folderPath?: string) => {
-        const url = new URL(window.location.href)
+    const fetchFolderData = useCallback(async (folder?: string) => {
+        setIsLoading(true)
+        setError(null)
 
-        if (folderPath) {
-            url.searchParams.set("folder", folderPath)
-        } else {
-            url.searchParams.delete("folder")
+        try {
+            const response = await DefaultService.getApiV1Files({
+                path: folder,
+            })
+            setCurrentFolderData(response)
+            setCurrentFolder(response.path)
+        } catch (err) {
+            console.error("Failed to fetch folder:", err)
+            setError(
+                "Failed to load folder. Please check the path and try again.",
+            )
+        } finally {
+            setIsLoading(false)
         }
-
-        // Replace encoded slashes with unescaped ones for better readability
-        const updatedUrl = url.toString().replace(/%2F/g, "/")
-
-        // Use replaceState to avoid cluttering browser history
-        window.history.replaceState(null, "", updatedUrl)
     }, [])
 
-    const fetchDirectory = useCallback(
-        async (path?: string, updateUrl = true) => {
-            console.log("Fetching directory:", path)
-            setLoading(true)
-            setError(null)
-
-            try {
-                const response = await DefaultService.getApiV1Files({ path })
-                console.log("API response:", response)
-                setDirectoryData(response)
-                setCurrentPath(response.path)
-
-                // Update URL if requested (default true)
-                if (updateUrl) {
-                    updateUrlFolder(response.path)
-                }
-            } catch (err) {
-                console.error("Failed to fetch directory:", err)
-                setError(
-                    "Failed to load directory. Please check the path and try again.",
-                )
-            } finally {
-                setLoading(false)
-            }
-        },
-        [updateUrlFolder],
-    )
-
-    // Load initial folder from URL or prop on mount
+    // Fetch initial folder data when component mounts
     useEffect(() => {
-        // Priority: URL folder parameter > initialFolder prop > home directory
-        const targetFolder = searchParams.folder || initialFolder
-        // Don't update URL if we're already loading from URL parameter
-        const shouldUpdateUrl = !searchParams.folder && !!initialFolder
-        fetchDirectory(targetFolder, shouldUpdateUrl)
-    }, [fetchDirectory, initialFolder, searchParams.folder])
+        fetchFolderData(initialFolder)
+    }, [initialFolder, fetchFolderData])
 
-    // Sync with URL folder parameter changes (when user navigates via URL/back button)
-    useEffect(() => {
-        // Only sync if the URL folder differs from current path
-        if (searchParams.folder && searchParams.folder !== currentPath) {
-            fetchDirectory(searchParams.folder, false) // Don't update URL since it's already set
-        } else if (!searchParams.folder && currentPath) {
-            // If URL has no folder but we have a current path, go to home
-            fetchDirectory(undefined, false)
-        }
-    }, [searchParams.folder, currentPath, fetchDirectory])
-
-    const handleRefresh = () => {
-        fetchDirectory(currentPath, false) // Don't update URL on refresh
-    }
-
-    const handleDirectoryClick = (path: string) => {
-        console.log("Directory click - navigating to:", path)
-        setSelectedPath(path)
-        fetchDirectory(path) // This will update URL
+    const handleGoHome = () => {
+        fetchFolderData(initialFolder)
     }
 
     const handleGoToParent = () => {
-        if (directoryData?.parent) {
-            handleDirectoryClick(directoryData.parent)
+        if (currentFolder) {
+            const parentFolder = currentFolder.split("/").slice(0, -1).join("/")
+            // If parentFolder is empty, it means we're going to root
+            fetchFolderData(parentFolder || "/")
         }
     }
 
-    const handleGoHome = () => {
-        setSelectedPath(undefined)
-        fetchDirectory() // This will fetch home directory and update URL
+    const handleRefresh = () => {
+        if (currentFolder) {
+            fetchFolderData(currentFolder)
+        } else {
+            fetchFolderData(initialFolder)
+        }
     }
 
-    const pathSegments = currentPath.split("/").filter(Boolean)
+    const handleFolderClick = (folder: string) => {
+        if (folder !== currentFolder) {
+            fetchFolderData(folder)
+        }
+    }
 
-    // Simple and reliable path construction for breadcrumbs
-    const constructBreadcrumbPath = (segmentIndex: number) => {
-        // Split current path and rebuild up to the target segment
-        const allParts = currentPath.split("/")
+    const pathSegments = useMemo(
+        () => currentFolder.split("/").filter(Boolean),
+        [currentFolder],
+    )
 
-        // Find where our pathSegments start in the full path
-        // Work backwards to find the matching sequence
-        let startIdx = -1
-        for (let i = allParts.length - pathSegments.length; i >= 0; i--) {
-            let matches = true
-            for (let j = 0; j < pathSegments.length; j++) {
-                if (allParts[i + j] !== pathSegments[j]) {
-                    matches = false
+    // Special case: if we're at root ("/"), show it as a segment
+    const isAtRoot = currentFolder === "/"
+    const displaySegments = useMemo(
+        () => (isAtRoot ? ["/"] : pathSegments),
+        [isAtRoot, pathSegments],
+    )
+
+    // Simple and reliable path construction for breadcrumbs - memoized to prevent unnecessary recalculations
+    const constructBreadcrumbPath = useMemo(() => {
+        return (segmentIndex: number) => {
+            // Special handling for root directory
+            if (isAtRoot && segmentIndex === 0) {
+                return "/"
+            }
+
+            // Split current path and rebuild up to the target segment
+            const allParts = currentFolder.split("/")
+
+            // Find where our pathSegments start in the full path
+            // Work backwards to find the matching sequence
+            let startIdx = -1
+            for (let i = allParts.length - pathSegments.length; i >= 0; i--) {
+                let matches = true
+                for (let j = 0; j < pathSegments.length; j++) {
+                    if (allParts[i + j] !== pathSegments[j]) {
+                        matches = false
+                        break
+                    }
+                }
+                if (matches) {
+                    startIdx = i
                     break
                 }
             }
-            if (matches) {
-                startIdx = i
-                break
+
+            if (startIdx === -1) {
+                // Fallback: just use the segments we have
+                const targetSegments = pathSegments.slice(0, segmentIndex + 1)
+                return `/${targetSegments.join("/")}`
             }
+
+            // Build path up to the target segment
+            const endIdx = startIdx + segmentIndex + 1
+            const targetParts = allParts.slice(0, endIdx)
+            const result = targetParts.join("/") || "/"
+
+            return result
         }
-
-        if (startIdx === -1) {
-            // Fallback: just use the segments we have
-            const targetSegments = pathSegments.slice(0, segmentIndex + 1)
-            return "/" + targetSegments.join("/")
-        }
-
-        // Build path up to the target segment
-        const endIdx = startIdx + segmentIndex + 1
-        const targetParts = allParts.slice(0, endIdx)
-        const result = targetParts.join("/") || "/"
-
-        console.log("Breadcrumb path construction:", {
-            currentPath,
-            pathSegments,
-            segmentIndex,
-            startIdx,
-            endIdx,
-            targetParts,
-            result,
-        })
-
-        return result
-    }
+    }, [currentFolder, pathSegments, isAtRoot])
 
     return (
         <div className="h-full">
@@ -255,19 +225,19 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                         variant="ghost"
                                         size="sm"
                                         onClick={handleGoHome}
-                                        disabled={loading}
-                                        title="Go to home directory"
+                                        disabled={isLoading}
+                                        title="Go to home folder"
                                         className="h-7 w-7 p-0"
                                     >
                                         <Home className="w-3 h-3" />
                                     </Button>
-                                    {directoryData?.parent && (
+                                    {currentFolderData?.parent && (
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             onClick={handleGoToParent}
-                                            disabled={loading}
-                                            title="Go to parent directory"
+                                            disabled={isLoading}
+                                            title="Go to parent folder"
                                             className="h-7 w-7 p-0"
                                         >
                                             <ArrowUp className="w-3 h-3" />
@@ -277,12 +247,12 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                         variant="ghost"
                                         size="sm"
                                         onClick={handleRefresh}
-                                        disabled={loading}
-                                        title="Refresh directory"
+                                        disabled={isLoading}
+                                        title="Refresh folder"
                                         className="h-7 w-7 p-0"
                                     >
                                         <RefreshCcw
-                                            className={`w-3 h-3 ${loading ? "animate-spin" : ""}`}
+                                            className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`}
                                         />
                                     </Button>
                                 </div>
@@ -300,11 +270,11 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                                 <Home className="w-3.5 h-3.5" />
                                             </BreadcrumbLink>
                                         </BreadcrumbItem>
-                                        {pathSegments.flatMap(
+                                        {displaySegments.flatMap(
                                             (segment, index) => {
                                                 const isLast =
                                                     index ===
-                                                    pathSegments.length - 1
+                                                    displaySegments.length - 1
                                                 const absolutePath =
                                                     constructBreadcrumbPath(
                                                         index,
@@ -322,7 +292,7 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                                             <BreadcrumbLink
                                                                 className="max-w-32 truncate cursor-pointer hover:text-foreground hover:shadow-sm transition-shadow duration-200 rounded px-1 py-0.5"
                                                                 onClick={() =>
-                                                                    handleDirectoryClick(
+                                                                    handleFolderClick(
                                                                         absolutePath,
                                                                     )
                                                                 }
@@ -353,10 +323,11 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
 
                         {/* Explorer Content */}
                         <div className="flex-1 overflow-auto">
-                            {loading && (
+                            {isLoading && (
                                 <div className="flex items-center justify-center h-32">
                                     <div className="text-sm text-muted-foreground">
                                         <Loader2 className="w-4 h-4 animate-spin mr-2 inline-block" />
+                                        Loading folder contents...
                                     </div>
                                 </div>
                             )}
@@ -369,13 +340,13 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                 </div>
                             )}
 
-                            {directoryData && !loading && !error && (
+                            {currentFolderData && !isLoading && !error && (
                                 <div className="space-y-0">
-                                    {directoryData.items
+                                    {currentFolderData.items
                                         .sort((a, b) => {
                                             // Sort directories first, then files
                                             if (a.type !== b.type) {
-                                                return a.type === "directory"
+                                                return a.type === "folder"
                                                     ? -1
                                                     : 1
                                             }
@@ -386,17 +357,17 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                                 key={entry.path}
                                                 entry={entry}
                                                 level={0}
-                                                onDirectoryClick={
-                                                    handleDirectoryClick
+                                                onFolderClick={
+                                                    handleFolderClick
                                                 }
-                                                selectedPath={selectedPath}
+                                                currentFolder={currentFolder}
                                             />
                                         ))}
 
-                                    {directoryData.items.length === 0 && (
+                                    {currentFolderData.items.length === 0 && (
                                         <div className="p-4 text-center">
                                             <div className="text-sm text-muted-foreground">
-                                                This directory is empty
+                                                This folder is empty
                                             </div>
                                         </div>
                                     )}

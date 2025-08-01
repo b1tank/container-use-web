@@ -113,7 +113,7 @@ export const handleTerminal = (
 						`\x1b[32mConnected to environment: ${environmentId}\x1b[0m\r\n`,
 					);
 					ptyShell.write(
-						`\x1b[36mWorking directory: ${workingDir || process.cwd()}\x1b[0m\r\n`,
+						`\x1b[36mWorking folder: ${workingDir || process.cwd()}\x1b[0m\r\n`,
 					);
 					ptyShell.write(
 						`\x1b[33mStarting container-use terminal...\x1b[0m\r\n`,
@@ -126,7 +126,7 @@ export const handleTerminal = (
 					`\x1b[32mStarting watch mode for all environments\x1b[0m\r\n`,
 				);
 				ptyShell.write(
-					`\x1b[36mWorking directory: ${workingDir || process.cwd()}\x1b[0m\r\n`,
+					`\x1b[36mWorking folder: ${workingDir || process.cwd()}\x1b[0m\r\n`,
 				);
 				ptyShell.write(
 					`\x1b[33mInitializing container-use watch...\x1b[0m\r\n`,
