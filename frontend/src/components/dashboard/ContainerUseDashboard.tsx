@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router"
 import {
     Eye,
     FileText,
@@ -8,7 +9,7 @@ import {
     Server,
     Terminal,
 } from "lucide-react"
-import { useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -42,6 +43,7 @@ export function ContainerUseDashboard({
     folder,
     cli,
 }: ContainerUseDashboardProps) {
+    const navigate = useNavigate()
     const watchViewerRef = useRef<WatchViewerRef>(null)
     const [watchStatus, setWatchStatus] = useState<{
         status: "disconnected" | "connecting" | "connected" | "error"
@@ -67,27 +69,83 @@ export function ContainerUseDashboard({
         hasError: false,
     })
 
-    const handleViewAction = (environmentId: string, viewType: ViewType) => {
-        setActiveViews((prev) => ({
-            ...prev,
-            [viewType]: prev[viewType] === environmentId ? null : environmentId,
-        }))
-    }
+    const handleViewAction = useCallback(
+        (environmentId: string, viewType: ViewType) => {
+            setActiveViews((prev) => ({
+                ...prev,
+                [viewType]:
+                    prev[viewType] === environmentId ? null : environmentId,
+            }))
+        },
+        [],
+    )
 
-    const handleWatchStatusChange = (
-        status: "disconnected" | "connecting" | "connected" | "error",
-        isWatching: boolean,
-    ) => {
-        setWatchStatus({ status, isWatching })
-    }
+    const handleWatchStatusChange = useCallback(
+        (
+            status: "disconnected" | "connecting" | "connected" | "error",
+            isWatching: boolean,
+        ) => {
+            setWatchStatus({ status, isWatching })
+        },
+        [],
+    )
 
-    const handleEnvironmentStatusChange = (
-        hasEnvironments: boolean,
-        isLoading: boolean,
-        hasError: boolean,
-    ) => {
-        setEnvironmentStatus({ hasEnvironments, isLoading, hasError })
-    }
+    const handleEnvironmentStatusChange = useCallback(
+        (hasEnvironments: boolean, isLoading: boolean, hasError: boolean) => {
+            setEnvironmentStatus({ hasEnvironments, isLoading, hasError })
+        },
+        [],
+    )
+
+    const handleWorkspaceFolderChange = useCallback(
+        (newFolder: string) => {
+            // If no environments are currently loaded (empty or error state),
+            // automatically reload environments for the new folder
+            if (
+                !environmentStatus.hasEnvironments &&
+                !environmentStatus.isLoading
+            ) {
+                console.log(
+                    "No environments found, auto-loading for new folder:",
+                    newFolder,
+                )
+                navigate({
+                    to: "/",
+                    search: {
+                        folder: newFolder,
+                        ...(cli && { cli }),
+                    },
+                })
+            } else {
+                // If environments are already loaded, don't automatically change
+                // Users must explicitly choose "Show environments here" from the dropdown menu
+                console.log(
+                    "Environments exist, folder changed but not auto-loading:",
+                    newFolder,
+                )
+            }
+        },
+        [
+            environmentStatus.hasEnvironments,
+            environmentStatus.isLoading,
+            navigate,
+            cli,
+        ],
+    )
+
+    const handleShowEnvironments = useCallback(
+        (newFolder: string) => {
+            // Update the URL search parameters to reflect the new folder
+            navigate({
+                to: "/",
+                search: {
+                    folder: newFolder,
+                    ...(cli && { cli }),
+                },
+            })
+        },
+        [navigate, cli],
+    )
 
     const handleToggleWatch = () => {
         watchViewerRef.current?.toggleConnection()
@@ -121,6 +179,12 @@ export function ContainerUseDashboard({
                                     <CardContent className="p-0 h-[calc(100%-2rem)] overflow-hidden">
                                         <WorkspaceViewer
                                             initialFolder={folder}
+                                            onFolderChange={
+                                                handleWorkspaceFolderChange
+                                            }
+                                            onShowEnvironments={
+                                                handleShowEnvironments
+                                            }
                                         />
                                     </CardContent>
                                 </Card>
@@ -152,7 +216,7 @@ export function ContainerUseDashboard({
                                             {activeViews.terminal && (
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-xs"
+                                                    className="text-xs font-mono px-2 py-0.5 bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md transition-all"
                                                 >
                                                     {activeViews.terminal}
                                                 </Badge>
@@ -214,6 +278,7 @@ export function ContainerUseDashboard({
                                             onViewAction={handleViewAction}
                                             folder={folder}
                                             cli={cli}
+                                            activeViews={activeViews}
                                             onEnvironmentStatusChange={
                                                 handleEnvironmentStatusChange
                                             }
@@ -354,7 +419,7 @@ export function ContainerUseDashboard({
                                             {activeViews.logs && (
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-xs"
+                                                    className="text-xs font-mono px-2 py-0.5 bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md transition-all"
                                                 >
                                                     {activeViews.logs}
                                                 </Badge>
@@ -415,7 +480,7 @@ export function ContainerUseDashboard({
                                             {activeViews.diff && (
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-xs"
+                                                    className="text-xs font-mono px-2 py-0.5 bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md transition-all"
                                                 >
                                                     {activeViews.diff}
                                                 </Badge>

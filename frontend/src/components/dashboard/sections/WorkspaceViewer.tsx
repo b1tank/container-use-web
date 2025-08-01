@@ -1,11 +1,14 @@
 import {
     ArrowUp,
     ChevronRight,
+    ExternalLink,
     FileIcon,
     FolderIcon,
     Home,
     Loader2,
+    MoreVertical,
     RefreshCcw,
+    Server,
 } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { DefaultService, type GetApiV1FilesResponse } from "@/client"
@@ -18,6 +21,12 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
     ResizableHandle,
     ResizablePanel,
@@ -91,7 +100,15 @@ function formatFileSize(bytes: number): string {
     return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`
 }
 
-export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
+export function WorkspaceViewer({
+    initialFolder,
+    onFolderChange,
+    onShowEnvironments,
+}: {
+    initialFolder?: string
+    onFolderChange?: (folder: string) => void
+    onShowEnvironments?: (folder: string) => void
+}) {
     const [currentFolder, setCurrentFolder] = useState<string>(
         initialFolder || "",
     )
@@ -100,25 +117,30 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
     const [isLoading, setIsLoading] = useState(false) // Start with loading state
     const [error, setError] = useState<string | null>(null)
 
-    const fetchFolderData = useCallback(async (folder?: string) => {
-        setIsLoading(true)
-        setError(null)
+    const fetchFolderData = useCallback(
+        async (folder?: string) => {
+            setIsLoading(true)
+            setError(null)
 
-        try {
-            const response = await DefaultService.getApiV1Files({
-                path: folder,
-            })
-            setCurrentFolderData(response)
-            setCurrentFolder(response.path)
-        } catch (err) {
-            console.error("Failed to fetch folder:", err)
-            setError(
-                "Failed to load folder. Please check the path and try again.",
-            )
-        } finally {
-            setIsLoading(false)
-        }
-    }, [])
+            try {
+                const response = await DefaultService.getApiV1Files({
+                    path: folder,
+                })
+                setCurrentFolderData(response)
+                setCurrentFolder(response.path)
+                // Notify parent component of folder change
+                onFolderChange?.(response.path)
+            } catch (err) {
+                console.error("Failed to fetch folder:", err)
+                setError(
+                    "Failed to load folder. Please check the path and try again.",
+                )
+            } finally {
+                setIsLoading(false)
+            }
+        },
+        [onFolderChange],
+    )
 
     // Fetch initial folder data when component mounts
     useEffect(() => {
@@ -148,6 +170,26 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
     const handleFolderClick = (folder: string) => {
         if (folder !== currentFolder) {
             fetchFolderData(folder)
+        }
+    }
+
+    const handleOpenInNewWindow = () => {
+        // Open current folder in a new browser tab
+        if (currentFolder) {
+            // Create a new URL with the current folder as a search parameter
+            const currentUrl = new URL(window.location.href)
+            // Clear existing search params and set the folder with regular slashes
+            currentUrl.search = `?folder=${currentFolder}`
+            window.open(currentUrl.toString(), "_blank")
+            console.log("Opening folder in new tab:", currentFolder)
+        }
+    }
+
+    const handleShowEnvironments = () => {
+        // Show environments for current folder
+        if (currentFolder && onShowEnvironments) {
+            onShowEnvironments(currentFolder)
+            console.log("Showing environments for folder:", currentFolder)
         }
     }
 
@@ -255,6 +297,36 @@ export function WorkspaceViewer({ initialFolder }: { initialFolder?: string }) {
                                             className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`}
                                         />
                                     </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                title="Folder actions"
+                                                className="h-7 w-7 p-0"
+                                            >
+                                                <MoreVertical className="w-3 h-3" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem
+                                                onClick={handleOpenInNewWindow}
+                                                disabled={!currentFolder}
+                                                className="cursor-pointer"
+                                            >
+                                                <ExternalLink className="w-4 h-4 mr-2" />
+                                                Open folder in new window
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={handleShowEnvironments}
+                                                disabled={!currentFolder}
+                                                className="cursor-pointer"
+                                            >
+                                                <Server className="w-4 h-4 mr-2" />
+                                                Show folder environments
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
                             </div>
 

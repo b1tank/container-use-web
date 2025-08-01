@@ -1,6 +1,6 @@
 import { FitAddon } from "@xterm/addon-fit"
 import { Terminal } from "@xterm/xterm"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import "@xterm/xterm/css/xterm.css"
 
 interface TerminalViewerProps {
@@ -18,9 +18,6 @@ export function TerminalViewer({
     const terminalInstanceRef = useRef<Terminal | null>(null)
     const fitAddonRef = useRef<FitAddon | null>(null)
     const websocketRef = useRef<WebSocket | null>(null)
-    const [connectionStatus, setConnectionStatus] = useState<
-        "disconnected" | "connecting" | "connected" | "error"
-    >("disconnected")
 
     useEffect(() => {
         if (!terminalRef.current || !environmentId) return
@@ -50,8 +47,6 @@ export function TerminalViewer({
 
         // Connect to environment-specific WebSocket
         const connectWebSocket = () => {
-            setConnectionStatus("connecting")
-
             // Build WebSocket URL with query parameters
             const baseUrl = `ws://localhost:8000/api/v1/environments/${environmentId}/terminal`
             const params = new URLSearchParams()
@@ -66,7 +61,6 @@ export function TerminalViewer({
                 websocketRef.current = websocket
 
                 websocket.onopen = () => {
-                    setConnectionStatus("connected")
                     terminal.writeln(
                         "\r\n\x1b[32mConnected to environment terminal!\x1b[0m",
                     )
@@ -78,7 +72,6 @@ export function TerminalViewer({
                 }
 
                 websocket.onclose = (event) => {
-                    setConnectionStatus("disconnected")
                     websocketRef.current = null
 
                     if (event.code !== 1000) {
@@ -93,14 +86,12 @@ export function TerminalViewer({
                 }
 
                 websocket.onerror = () => {
-                    setConnectionStatus("error")
                     websocketRef.current = null
                     terminal.writeln(
                         `\r\n\x1b[31mWebSocket error occurred\x1b[0m\r\n`,
                     )
                 }
             } catch (error) {
-                setConnectionStatus("error")
                 terminal.writeln(
                     `\r\n\x1b[31mFailed to connect: ${error instanceof Error ? error.message : "Unknown error"}\x1b[0m\r\n`,
                 )
@@ -157,27 +148,11 @@ export function TerminalViewer({
     }
 
     return (
-        <div className="h-full bg-black relative">
-            {/* Connection status indicator */}
-            <div className="absolute top-2 right-2 z-10">
-                <div
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                        connectionStatus === "connected"
-                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                            : connectionStatus === "connecting"
-                              ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                              : connectionStatus === "error"
-                                ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                                : "bg-gray-500/20 text-gray-400 border border-gray-500/30"
-                    }`}
-                >
-                    {connectionStatus === "connected" && "🟢 Connected"}
-                    {connectionStatus === "connecting" && "🟡 Connecting..."}
-                    {connectionStatus === "error" && "🔴 Error"}
-                    {connectionStatus === "disconnected" && "⚫ Disconnected"}
-                </div>
+        <div className="h-full flex flex-col">
+            {/* Terminal Content */}
+            <div className="flex-1 bg-black relative">
+                <div ref={terminalRef} className="h-full" />
             </div>
-            <div ref={terminalRef} className="h-full" />
         </div>
     )
 }

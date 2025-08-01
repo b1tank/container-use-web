@@ -76,9 +76,13 @@ export function LogViewer({ environmentId, folder, cli }: LogViewerProps) {
             {/* Controls Header */}
             <div className="px-3 py-2 border-b bg-muted/30">
                 <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">
-                        Environment Logs
-                    </span>
+                    {logData && (
+                        <div className="text-xs text-muted-foreground">
+                            Last updated:{" "}
+                            {new Date(logData.timestamp).toLocaleTimeString()}
+                            {autoRefresh && " (auto-refresh enabled)"}
+                        </div>
+                    )}
                     <div className="flex items-center gap-2">
                         <Button
                             onClick={toggleAutoRefresh}
@@ -99,19 +103,11 @@ export function LogViewer({ environmentId, folder, cli }: LogViewerProps) {
                             className="h-7 px-2"
                         >
                             <RefreshCw
-                                className={`h-3 w-3 mr-1 ${isLoading ? "animate-spin" : ""}`}
+                                className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`}
                             />
-                            Refresh
                         </Button>
                     </div>
                 </div>
-                {logData && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                        Last updated:{" "}
-                        {new Date(logData.timestamp).toLocaleTimeString()}
-                        {autoRefresh && " (auto-refresh enabled)"}
-                    </div>
-                )}
             </div>
 
             {/* Log Content */}
