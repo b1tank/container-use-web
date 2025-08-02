@@ -1,6 +1,6 @@
 import { FitAddon } from "@xterm/addon-fit"
 import { Terminal } from "@xterm/xterm"
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import "@xterm/xterm/css/xterm.css"
 
 interface WatchViewerProps {
@@ -18,6 +18,20 @@ export function WatchViewer({
     const terminalInstanceRef = useRef<Terminal | null>(null)
     const fitAddonRef = useRef<FitAddon | null>(null)
     const websocketRef = useRef<WebSocket | null>(null)
+    const resizeObserverRef = useRef<ResizeObserver | null>(null)
+    const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+    // Debounced resize handler to avoid excessive calls during dragging
+    const handleResize = useCallback(() => {
+        if (resizeTimeoutRef.current) {
+            clearTimeout(resizeTimeoutRef.current)
+        }
+        resizeTimeoutRef.current = setTimeout(() => {
+            if (fitAddonRef.current) {
+                fitAddonRef.current.fit()
+            }
+        }, 100) // 100ms debounce
+    }, [])
 
     useEffect(() => {
         if (!terminalRef.current || !connected) return
@@ -108,16 +122,33 @@ export function WatchViewer({
             }
         })
 
-        // Handle resize
-        const handleResize = () => {
-            fitAddon.fit()
+        // Set up ResizeObserver to watch for container size changes
+        if (terminalRef.current) {
+            const resizeObserver = new ResizeObserver(() => {
+                handleResize()
+            })
+            resizeObserver.observe(terminalRef.current)
+            resizeObserverRef.current = resizeObserver
         }
+
+        // Also listen to window resize events as fallback
         window.addEventListener("resize", handleResize)
 
         // Connect to WebSocket
         connectWebSocket()
 
         return () => {
+            // Clean up resize timeout
+            if (resizeTimeoutRef.current) {
+                clearTimeout(resizeTimeoutRef.current)
+            }
+
+            // Clean up ResizeObserver
+            if (resizeObserverRef.current) {
+                resizeObserverRef.current.disconnect()
+                resizeObserverRef.current = null
+            }
+
             // Clean up WebSocket connection
             if (websocketRef.current) {
                 websocketRef.current.close(1000, "Component unmounting")
@@ -129,7 +160,7 @@ export function WatchViewer({
             terminalInstanceRef.current = null
             fitAddonRef.current = null
         }
-    }, [folder, cli, connected])
+    }, [folder, cli, connected, handleResize])
 
     return (
         <div className="h-full flex flex-col">
