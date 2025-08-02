@@ -22,7 +22,7 @@ interface ActiveViews {
     diff: string | null
 }
 
-interface EnvironmentListProps {
+interface EnvironmentViewerProps {
     onViewAction: (environmentId: string, viewType: ViewType) => void
     folder?: string
     cli?: string
@@ -34,13 +34,13 @@ interface EnvironmentListProps {
     ) => void
 }
 
-export function EnvironmentList({
+export function EnvironmentViewer({
     onViewAction,
     folder,
     cli,
     activeViews,
     onEnvironmentStatusChange,
-}: EnvironmentListProps) {
+}: EnvironmentViewerProps) {
     const [autoRefresh, setAutoRefresh] = useState(false)
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/resizable"
 import { Separator } from "@/components/ui/separator"
 import { DiffViewer } from "./sections/DiffViewer"
-import { EnvironmentList } from "./sections/EnvironmentList"
+import { EnvironmentViewer } from "./sections/EnvironmentViewer"
 import { LogViewer } from "./sections/LogViewer"
 import { TerminalViewer } from "./sections/TerminalViewer"
 import { WatchViewer } from "./sections/WatchViewer"
@@ -257,7 +257,7 @@ export function ContainerUseDashboard({
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <EnvironmentList
+                                        <EnvironmentViewer
                                             onViewAction={handleViewAction}
                                             folder={folder}
                                             cli={cli}
