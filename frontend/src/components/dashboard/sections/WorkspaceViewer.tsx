@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { DefaultService, type GetApiV1FilesResponse } from "@/client"
+import { FileEditor } from "@/components/editor/FileEditor"
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -45,20 +46,27 @@ interface FileTreeProps {
     entry: FileEntry
     level: number
     onFolderClick: (path: string) => void
+    onFileClick?: (path: string) => void
     currentFolder?: string
+    selectedFile?: string | null
 }
 
 function FileTree({
     entry,
     level,
     onFolderClick,
+    onFileClick,
     currentFolder,
+    selectedFile,
 }: FileTreeProps) {
     const isSelected = currentFolder === entry.path
+    const isFileSelected = entry.type === "file" && selectedFile === entry.path
 
     const handleClick = () => {
         if (entry.type === "folder") {
             onFolderClick(entry.path)
+        } else if (entry.type === "file" && onFileClick) {
+            onFileClick(entry.path)
         }
     }
 
@@ -66,7 +74,9 @@ function FileTree({
         <button
             type="button"
             className={`flex items-center py-2 px-2 cursor-pointer hover:bg-muted/50 w-full text-left transition-colors ${
-                isSelected ? "bg-primary/10 border-r-2 border-primary" : ""
+                isSelected || isFileSelected
+                    ? "bg-primary/10 border-r-2 border-primary"
+                    : ""
             }`}
             style={{ paddingLeft: `${level * 16 + 8}px` }}
             onClick={handleClick}
@@ -116,6 +126,7 @@ export function WorkspaceViewer({
         useState<GetApiV1FilesResponse | null>(null)
     const [isLoading, setIsLoading] = useState(false) // Start with loading state
     const [error, setError] = useState<string | null>(null)
+    const [selectedFile, setSelectedFile] = useState<string | null>(null)
 
     const fetchFolderData = useCallback(
         async (folder?: string) => {
@@ -170,8 +181,19 @@ export function WorkspaceViewer({
     const handleFolderClick = (folder: string) => {
         if (folder !== currentFolder) {
             fetchFolderData(folder)
+            setSelectedFile(null) // Clear selected file when changing folders
         }
     }
+
+    const handleFileClick = useCallback((filePath: string) => {
+        setSelectedFile(filePath)
+    }, [])
+
+    const handleOpenInVSCode = useCallback((filePath: string) => {
+        // Open file in VS Code using the vscode:// URL scheme
+        const vscodeUrl = `vscode://file/${filePath}`
+        window.open(vscodeUrl, "_self")
+    }, [])
 
     const handleOpenInNewWindow = () => {
         // Open current folder in a new browser tab
@@ -432,7 +454,9 @@ export function WorkspaceViewer({
                                                 onFolderClick={
                                                     handleFolderClick
                                                 }
+                                                onFileClick={handleFileClick}
                                                 currentFolder={currentFolder}
+                                                selectedFile={selectedFile}
                                             />
                                         ))}
 
@@ -454,29 +478,10 @@ export function WorkspaceViewer({
                 {/* Editor Panel */}
                 <ResizablePanel defaultSize={65} minSize={40}>
                     <div className="h-full flex flex-col">
-                        {/* Editor Header */}
-                        <div className="px-3 py-2 border-b bg-muted/30">
-                            <span className="text-sm font-semibold">
-                                Editor
-                            </span>
-                        </div>
-
-                        {/* Editor Content */}
-                        <div className="flex-1 overflow-auto">
-                            <div className="flex items-center justify-center h-full">
-                                <div className="text-center space-y-2">
-                                    <div className="text-lg text-muted-foreground">
-                                        📝
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        Editor not implemented yet
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        Monaco editor will be integrated here
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <FileEditor
+                            filePath={selectedFile || undefined}
+                            onOpenInVSCode={handleOpenInVSCode}
+                        />
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>

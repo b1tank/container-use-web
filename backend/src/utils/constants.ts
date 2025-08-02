@@ -12,6 +12,7 @@ export const CLI_COMMANDS = {
 	DIFF: "diff",
 	WATCH: "watch",
 	TERMINAL: "terminal",
+	FILE_WATCH: "file-watch",
 } as const;
 
 // CLI command type

@@ -9,7 +9,7 @@ import { cors } from "hono/cors";
 import { environments } from "./routes/environments.js";
 import { files } from "./routes/files.js";
 import { CLI_COMMANDS, DEFAULT_CLI_PATH } from "./utils/constants.js";
-import { handleTerminal } from "./utils/terminal.js";
+import { handleFileWatch, handleTerminal } from "./utils/terminal.js";
 
 const app = new OpenAPIHono();
 
@@ -122,6 +122,40 @@ app.get(
 			},
 			onError: (event, ws) => {
 				console.error("Watch WebSocket error:", event);
+			},
+		};
+	}),
+);
+
+// WebSocket route for file watching
+app.get(
+	"/api/v1/files/watch",
+	upgradeWebSocket((c) => {
+		const filePath = c.req.query("path");
+
+		if (!filePath) {
+			return {
+				onOpen: (_event, ws) => {
+					ws.close(1000, "File path is required");
+				},
+			};
+		}
+
+		return {
+			onOpen: (_event, ws) => {
+				console.log(`File watch WebSocket connection opened for: ${filePath}`);
+				if (ws.raw) {
+					handleFileWatch(ws.raw, filePath);
+				}
+			},
+			onMessage: (_event, _ws) => {
+				// File watching doesn't need to handle incoming messages
+			},
+			onClose: (_event, _ws) => {
+				console.log(`File watch WebSocket connection closed for: ${filePath}`);
+			},
+			onError: (event, _ws) => {
+				console.error(`File watch WebSocket error for ${filePath}:`, event);
 			},
 		};
 	}),

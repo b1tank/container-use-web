@@ -1,5 +1,7 @@
+import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import process from "node:process";
+import chokidar, { type FSWatcher } from "chokidar";
 import * as pty from "node-pty";
 import { CLI_COMMANDS, type CLICommand } from "./constants.js";
 
@@ -8,6 +10,7 @@ interface TerminalOptions {
 	environmentId?: string;
 	workingDir?: string;
 	cliPath?: string;
+	filePath?: string; // For file watching
 }
 
 const getOSShell = (): string => {
@@ -51,7 +54,8 @@ const getEnhancedEnv = () => {
  * - Any CLI command: handleTerminal(ws, { command: CLI_COMMANDS.LIST, workingDir: "/path", cliPath: "/usr/bin/container-use" })
  */
 export const handleTerminal = (
-	ws: WebSocket,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	ws: any,
 	options: TerminalOptions = {},
 ): void => {
 	const { command, environmentId, workingDir, cliPath } = options;
@@ -146,4 +150,95 @@ export const handleTerminal = (
 				break;
 		}
 	}
+};
+
+/**
+ * File watching handler that streams file content changes in real-time
+ *
+ * @param ws WebSocket connection from @hono/node-ws
+ * @param filePath Absolute path to the file to watch
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const handleFileWatch = (ws: any, filePath: string): void => {
+	let watcher: FSWatcher | null = null;
+
+	const sendFileContent = async () => {
+		try {
+			const content = await readFile(filePath, "utf-8");
+			ws.send(
+				JSON.stringify({
+					type: "content",
+					filePath,
+					content,
+					timestamp: new Date().toISOString(),
+				}),
+			);
+		} catch (error) {
+			ws.send(
+				JSON.stringify({
+					type: "error",
+					filePath,
+					error: error instanceof Error ? error.message : "Unknown error",
+					timestamp: new Date().toISOString(),
+				}),
+			);
+		}
+	};
+
+	// Send initial content
+	sendFileContent();
+
+	// Set up file watcher
+	watcher = chokidar.watch(filePath, {
+		persistent: true,
+		ignoreInitial: true, // Don't emit events for initial scan
+		awaitWriteFinish: {
+			stabilityThreshold: 100,
+			pollInterval: 50,
+		},
+	});
+
+	// Watch for file changes
+	watcher.on("change", () => {
+		sendFileContent();
+	});
+
+	// Handle file deletion
+	watcher.on("unlink", () => {
+		ws.send(
+			JSON.stringify({
+				type: "deleted",
+				filePath,
+				timestamp: new Date().toISOString(),
+			}),
+		);
+	});
+
+	// Handle errors
+	watcher.on("error", (error: unknown) => {
+		ws.send(
+			JSON.stringify({
+				type: "error",
+				filePath,
+				error: error instanceof Error ? error.message : "Unknown error",
+				timestamp: new Date().toISOString(),
+			}),
+		);
+	});
+
+	// Clean up when WebSocket closes
+	ws.addEventListener("close", () => {
+		if (watcher) {
+			watcher.close();
+			watcher = null;
+		}
+	});
+
+	// Handle WebSocket errors
+	ws.addEventListener("error", () => {
+		if (watcher) {
+			watcher.close();
+			watcher = null;
+		}
+	});
 };
