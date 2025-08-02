@@ -3,6 +3,7 @@ import {
     Eye,
     FileText,
     Folder,
+    GitBranch,
     GitCompare,
     Plug,
     Server,
@@ -143,14 +144,14 @@ export function ContainerUseDashboard({
             {/* Main horizontal layout: Left (3/4) + Right (1/4) */}
             <div className="flex-1 overflow-hidden">
                 <ResizablePanelGroup direction="horizontal" className="h-full">
-                    {/* Left Section (3/4) - Workspace + Terminal */}
+                    {/* Left Section (3/4) - Workspace + Watch + Terminal */}
                     <ResizablePanel defaultSize={75} minSize={60} maxSize={85}>
                         <ResizablePanelGroup
                             direction="vertical"
                             className="h-full"
                         >
                             {/* Top: Workspace */}
-                            <ResizablePanel defaultSize={50} minSize={30}>
+                            <ResizablePanel defaultSize={40} minSize={25}>
                                 <Card className="h-full rounded-none border-r-0 border-l-0 border-t-0 border-b-0">
                                     <CardHeader>
                                         <CardTitle className="text-lg flex items-center gap-2">
@@ -175,107 +176,10 @@ export function ContainerUseDashboard({
 
                             <ResizableHandle />
 
-                            {/* Bottom: Terminal */}
-                            <ResizablePanel defaultSize={50} minSize={30}>
+                            {/* Middle: Watch */}
+                            <ResizablePanel defaultSize={30} minSize={20}>
                                 <Card
                                     className={`h-full rounded-none border-t border-l-0 border-r-0 border-b-0 ${shouldDisableViews ? "opacity-50" : ""}`}
-                                >
-                                    <CardHeader>
-                                        <CardTitle className="text-lg flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Terminal
-                                                    className={`h-5 w-5 ${shouldDisableViews ? "text-muted-foreground" : ""}`}
-                                                />
-                                                <span
-                                                    className={
-                                                        shouldDisableViews
-                                                            ? "text-muted-foreground"
-                                                            : ""
-                                                    }
-                                                >
-                                                    Terminal
-                                                </span>
-                                            </div>
-                                            {activeViews.terminal && (
-                                                <Badge
-                                                    variant="outline"
-                                                    className="text-xs font-mono px-2 py-0.5 bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md transition-all"
-                                                >
-                                                    {activeViews.terminal}
-                                                </Badge>
-                                            )}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <Separator />
-                                    <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        {shouldDisableViews ? (
-                                            <div className="flex items-center justify-center h-full bg-black/10">
-                                                <div className="text-center space-y-2">
-                                                    <div className="text-2xl text-muted-foreground">
-                                                        💻
-                                                    </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        No Environments
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground/70">
-                                                        Select an environment to
-                                                        open terminal
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <TerminalViewer
-                                                environmentId={
-                                                    activeViews.terminal
-                                                }
-                                                folder={folder}
-                                                cli={cli}
-                                            />
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </ResizablePanel>
-                        </ResizablePanelGroup>
-                    </ResizablePanel>
-
-                    <ResizableHandle />
-
-                    {/* Right Section (1/4) - Environment + Watch + Log + Diff */}
-                    <ResizablePanel defaultSize={25} minSize={25} maxSize={40}>
-                        <ResizablePanelGroup
-                            direction="vertical"
-                            className="h-full"
-                        >
-                            {/* Environment Section */}
-                            <ResizablePanel defaultSize={25} minSize={15}>
-                                <Card className="h-full rounded-none border-l border-r-0 border-t-0 border-b-0">
-                                    <CardHeader>
-                                        <CardTitle className="text-lg flex items-center gap-2">
-                                            <Server className="h-5 w-5" />
-                                            Environments
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <Separator />
-                                    <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <EnvironmentViewer
-                                            onViewAction={handleViewAction}
-                                            folder={folder}
-                                            cli={cli}
-                                            activeViews={activeViews}
-                                            onEnvironmentStatusChange={
-                                                handleEnvironmentStatusChange
-                                            }
-                                        />
-                                    </CardContent>
-                                </Card>
-                            </ResizablePanel>
-
-                            <ResizableHandle />
-
-                            {/* Watch Section */}
-                            <ResizablePanel defaultSize={25} minSize={15}>
-                                <Card
-                                    className={`h-full rounded-none border-l border-t border-r-0 border-b-0 ${shouldDisableViews ? "opacity-50" : ""}`}
                                 >
                                     <CardHeader>
                                         <CardTitle className="text-lg flex items-center justify-between">
@@ -366,6 +270,133 @@ export function ContainerUseDashboard({
                                                 connected={watchConnected}
                                             />
                                         )}
+                                    </CardContent>
+                                </Card>
+                            </ResizablePanel>
+
+                            <ResizableHandle />
+
+                            {/* Bottom: Terminal */}
+                            <ResizablePanel defaultSize={30} minSize={20}>
+                                <Card
+                                    className={`h-full rounded-none border-t border-l-0 border-r-0 border-b-0 ${shouldDisableViews ? "opacity-50" : ""}`}
+                                >
+                                    <CardHeader>
+                                        <CardTitle className="text-lg flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Terminal
+                                                    className={`h-5 w-5 ${shouldDisableViews ? "text-muted-foreground" : ""}`}
+                                                />
+                                                <span
+                                                    className={
+                                                        shouldDisableViews
+                                                            ? "text-muted-foreground"
+                                                            : ""
+                                                    }
+                                                >
+                                                    Terminal
+                                                </span>
+                                            </div>
+                                            {activeViews.terminal && (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-xs font-mono px-2 py-0.5 bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md transition-all"
+                                                >
+                                                    {activeViews.terminal}
+                                                </Badge>
+                                            )}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <Separator />
+                                    <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
+                                        {shouldDisableViews ? (
+                                            <div className="flex items-center justify-center h-full bg-black/10">
+                                                <div className="text-center space-y-2">
+                                                    <div className="text-2xl text-muted-foreground">
+                                                        💻
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        No Environments
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground/70">
+                                                        Select an environment to
+                                                        open terminal
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <TerminalViewer
+                                                environmentId={
+                                                    activeViews.terminal
+                                                }
+                                                folder={folder}
+                                                cli={cli}
+                                            />
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </ResizablePanel>
+                        </ResizablePanelGroup>
+                    </ResizablePanel>
+
+                    <ResizableHandle />
+
+                    {/* Right Section (1/4) - Environment + Git + Log + Diff */}
+                    <ResizablePanel defaultSize={25} minSize={25} maxSize={40}>
+                        <ResizablePanelGroup
+                            direction="vertical"
+                            className="h-full"
+                        >
+                            {/* Environment Section */}
+                            <ResizablePanel defaultSize={25} minSize={15}>
+                                <Card className="h-full rounded-none border-l border-r-0 border-t-0 border-b-0">
+                                    <CardHeader>
+                                        <CardTitle className="text-lg flex items-center gap-2">
+                                            <Server className="h-5 w-5" />
+                                            Environments
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <Separator />
+                                    <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
+                                        <EnvironmentViewer
+                                            onViewAction={handleViewAction}
+                                            folder={folder}
+                                            cli={cli}
+                                            activeViews={activeViews}
+                                            onEnvironmentStatusChange={
+                                                handleEnvironmentStatusChange
+                                            }
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </ResizablePanel>
+
+                            <ResizableHandle />
+
+                            {/* Git Section */}
+                            <ResizablePanel defaultSize={25} minSize={15}>
+                                <Card className="h-full rounded-none border-l border-t border-r-0 border-b-0">
+                                    <CardHeader>
+                                        <CardTitle className="text-lg flex items-center gap-2">
+                                            <GitBranch className="h-5 w-5" />
+                                            Git
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <Separator />
+                                    <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
+                                        <div className="flex items-center justify-center h-full bg-muted/10">
+                                            <div className="text-center space-y-2">
+                                                <div className="text-2xl text-muted-foreground">
+                                                    🌳
+                                                </div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    Git Viewer
+                                                </div>
+                                                <div className="text-xs text-muted-foreground/70">
+                                                    Coming soon...
+                                                </div>
+                                            </div>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>
