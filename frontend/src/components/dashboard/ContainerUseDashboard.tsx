@@ -4,6 +4,7 @@ import {
     FileText,
     Folder,
     GitCompare,
+    Plug,
     Server,
     Terminal,
 } from "lucide-react"
@@ -49,6 +50,8 @@ export function ContainerUseDashboard({
         diff: null,
     })
 
+    const [watchConnected, setWatchConnected] = useState<boolean>(false)
+
     const [environmentStatus, setEnvironmentStatus] = useState<{
         hasEnvironments: boolean
         isLoading: boolean
@@ -76,6 +79,10 @@ export function ContainerUseDashboard({
         },
         [],
     )
+
+    const handleWatchToggle = useCallback(() => {
+        setWatchConnected((prev) => !prev)
+    }, [])
 
     const handleWorkspaceFolderChange = useCallback(
         (newFolder: string) => {
@@ -285,7 +292,39 @@ export function ContainerUseDashboard({
                                                 >
                                                     Watch
                                                 </span>
+                                                {!shouldDisableViews &&
+                                                    watchConnected && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 w-6 p-0 relative border border-green-400/60 hover:bg-primary/10"
+                                                            disabled
+                                                        >
+                                                            <Plug className="h-3 w-3 text-green-600" />
+                                                            <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                                                        </Button>
+                                                    )}
                                             </div>
+                                            {!shouldDisableViews && (
+                                                <Button
+                                                    variant={
+                                                        watchConnected
+                                                            ? "ghost"
+                                                            : "outline"
+                                                    }
+                                                    size="sm"
+                                                    onClick={handleWatchToggle}
+                                                    className={`text-xs h-6 px-2 ${
+                                                        watchConnected
+                                                            ? "text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                                                            : "border-green-400/60 text-green-700 hover:bg-green-50 hover:text-green-800"
+                                                    }`}
+                                                >
+                                                    {watchConnected
+                                                        ? "Disconnect"
+                                                        : "Connect"}
+                                                </Button>
+                                            )}
                                         </CardTitle>
                                     </CardHeader>
                                     <Separator />
@@ -305,10 +344,26 @@ export function ContainerUseDashboard({
                                                     </div>
                                                 </div>
                                             </div>
+                                        ) : !watchConnected ? (
+                                            <div className="flex items-center justify-center h-full bg-muted/20">
+                                                <div className="text-center space-y-2">
+                                                    <div className="text-2xl text-muted-foreground">
+                                                        👁️
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        Environments available
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground/70">
+                                                        Click Connect to start
+                                                        watching
+                                                    </div>
+                                                </div>
+                                            </div>
                                         ) : (
                                             <WatchViewer
                                                 folder={folder}
                                                 cli={cli}
+                                                connected={watchConnected}
                                             />
                                         )}
                                     </CardContent>

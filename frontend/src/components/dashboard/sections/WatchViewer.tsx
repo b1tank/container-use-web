@@ -6,16 +6,21 @@ import "@xterm/xterm/css/xterm.css"
 interface WatchViewerProps {
     folder?: string
     cli?: string
+    connected?: boolean
 }
 
-export function WatchViewer({ folder, cli }: WatchViewerProps) {
+export function WatchViewer({
+    folder,
+    cli,
+    connected = false,
+}: WatchViewerProps) {
     const terminalRef = useRef<HTMLDivElement>(null)
     const terminalInstanceRef = useRef<Terminal | null>(null)
     const fitAddonRef = useRef<FitAddon | null>(null)
     const websocketRef = useRef<WebSocket | null>(null)
 
     useEffect(() => {
-        if (!terminalRef.current) return
+        if (!terminalRef.current || !connected) return
 
         // Create terminal instance
         const terminal = new Terminal({
@@ -124,13 +129,27 @@ export function WatchViewer({ folder, cli }: WatchViewerProps) {
             terminalInstanceRef.current = null
             fitAddonRef.current = null
         }
-    }, [folder, cli])
+    }, [folder, cli, connected])
 
     return (
         <div className="h-full flex flex-col">
             {/* Terminal Content */}
             <div className="flex-1 bg-black relative">
-                <div ref={terminalRef} className="h-full" />
+                {connected ? (
+                    <div ref={terminalRef} className="h-full" />
+                ) : (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-center space-y-2">
+                            <div className="text-lg text-muted-foreground">
+                                Terminal not connected
+                            </div>
+                            <div className="text-sm text-muted-foreground/70">
+                                Use the Connect button to start the watch
+                                terminal
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )
