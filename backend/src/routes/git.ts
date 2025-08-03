@@ -2,80 +2,11 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { ErrorSchema } from "../models/environment.js";
+import { GitCheckoutSchema, GitInfoSchema } from "../models/git.js";
 import {
 	createCLIErrorResponse,
 	executeGenericCommand,
 } from "../utils/cli-executor.js";
-
-// Git schemas
-const GitBranchSchema = z.object({
-	name: z.string().openapi({
-		example: "main",
-		description: "Branch name",
-	}),
-	current: z.boolean().openapi({
-		example: true,
-		description: "Whether this is the current branch",
-	}),
-	remote: z.boolean().openapi({
-		example: false,
-		description: "Whether this is a remote branch",
-	}),
-	upstream: z.string().optional().openapi({
-		example: "origin/main",
-		description: "Upstream branch name",
-	}),
-	ahead: z.number().optional().openapi({
-		example: 2,
-		description: "Number of commits ahead of upstream",
-	}),
-	behind: z.number().optional().openapi({
-		example: 0,
-		description: "Number of commits behind upstream",
-	}),
-});
-
-const GitStatusSchema = z.object({
-	currentBranch: z.string().openapi({
-		example: "main",
-		description: "Current branch name",
-	}),
-	isRepository: z.boolean().openapi({
-		example: true,
-		description: "Whether the folder is a git repository",
-	}),
-	hasUncommittedChanges: z.boolean().openapi({
-		example: false,
-		description: "Whether there are uncommitted changes",
-	}),
-	branches: z.array(GitBranchSchema).openapi({
-		description: "List of all branches",
-	}),
-});
-
-const GitInfoResponseSchema = z.object({
-	success: z.boolean().openapi({
-		example: true,
-		description: "Whether the operation was successful",
-	}),
-	data: GitStatusSchema.openapi({
-		description: "Git repository information",
-	}),
-});
-
-const GitCheckoutResponseSchema = z.object({
-	success: z.boolean().openapi({
-		example: true,
-		description: "Whether the checkout was successful",
-	}),
-	message: z.string().openapi({
-		example: "Successfully checked out branch: main",
-		description: "Success or error message",
-	}),
-	data: GitStatusSchema.optional().openapi({
-		description: "Updated git repository information",
-	}),
-});
 
 // Route to get git information
 export const gitInfoRoute = createRoute({
@@ -100,7 +31,7 @@ export const gitInfoRoute = createRoute({
 		200: {
 			content: {
 				"application/json": {
-					schema: GitInfoResponseSchema,
+					schema: GitInfoSchema,
 				},
 			},
 			description: "Git repository information",
@@ -159,7 +90,7 @@ export const gitCheckoutRoute = createRoute({
 		200: {
 			content: {
 				"application/json": {
-					schema: GitCheckoutResponseSchema,
+					schema: GitCheckoutSchema,
 				},
 			},
 			description: "Git checkout result",
@@ -193,6 +124,9 @@ interface GitBranch {
 	upstream?: string;
 	ahead?: number;
 	behind?: number;
+	commitHash?: string;
+	commitMessage?: string;
+	trackingStatus?: string;
 }
 
 interface GitStatus {
@@ -236,77 +170,137 @@ async function getCurrentBranch(folder: string): Promise<string | null> {
 }
 
 /**
- * Get all branches (local and remote)
+ * Get all branches (local and remote) with detailed information
  */
 async function getAllBranches(folder: string): Promise<GitBranch[]> {
 	try {
-		// Get local branches
-		const localResult = await executeGenericCommand({
+		// Use git branch -av to get all branches with verbose information
+		const result = await executeGenericCommand({
 			command: "git",
-			args: ["branch", "-v"],
-			workingDir: folder,
-		});
-
-		// Get remote branches
-		const remoteResult = await executeGenericCommand({
-			command: "git",
-			args: ["branch", "-rv"],
+			args: ["branch", "-av"],
 			workingDir: folder,
 		});
 
 		const branches: GitBranch[] = [];
 
-		// Parse local branches
-		if (localResult.code === 0) {
-			const lines = localResult.stdout
+		if (result.code === 0) {
+			const lines = result.stdout
 				.split("\n")
 				.filter((line: string) => line.trim());
+
 			for (const line of lines) {
 				const trimmed = line.trim();
 				if (!trimmed) continue;
 
+				// Skip HEAD references (like "remotes/origin/HEAD -> origin/main")
+				if (trimmed.includes("->")) continue;
+
 				const isCurrent = trimmed.startsWith("*");
 				const branchInfo = isCurrent ? trimmed.substring(1).trim() : trimmed;
-				const parts = branchInfo.split(/\s+/);
 
-				if (parts.length >= 1) {
-					const name = parts[0];
-					branches.push({
-						name,
-						current: isCurrent,
-						remote: false,
-					});
-				}
-			}
-		}
+				// Parse the branch line format:
+				// branch-name    commit-hash [tracking-info] commit message
+				// remotes/origin/branch-name    commit-hash commit message
+				const match = branchInfo.match(/^(\S+)\s+([a-f0-9]+)\s*(.*)$/);
 
-		// Parse remote branches
-		if (remoteResult.code === 0) {
-			const lines = remoteResult.stdout
-				.split("\n")
-				.filter((line: string) => line.trim());
-			for (const line of lines) {
-				const trimmed = line.trim();
-				if (!trimmed || trimmed.includes("->")) continue; // Skip HEAD references
+				if (!match) continue;
 
-				const parts = trimmed.split(/\s+/);
-				if (parts.length >= 1) {
-					const fullName = parts[0];
-					// Extract just the branch name from origin/branch-name
-					const branchName = fullName.includes("/")
-						? fullName.split("/").slice(1).join("/")
-						: fullName;
+				const [, fullName, commitHash, rest] = match;
+				let commitMessage = rest;
+				let trackingStatus: string | undefined;
+				let upstream: string | undefined;
 
-					// Only add if we don't already have this branch locally
-					if (!branches.some((b) => b.name === branchName && !b.remote)) {
-						branches.push({
-							name: branchName,
-							current: false,
-							remote: true,
-							upstream: fullName,
-						});
+				// Check for tracking information in brackets like [gone], [ahead 2], [behind 1], etc.
+				const trackingMatch = rest.match(/^\[([^\]]+)\]\s*(.*)$/);
+				if (trackingMatch) {
+					const [, tracking, message] = trackingMatch;
+					trackingStatus = tracking;
+					commitMessage = message;
+
+					// Extract upstream information if available
+					if (tracking.includes("gone")) {
+						trackingStatus = "gone";
+					} else if (tracking.includes(":")) {
+						// Format like "origin/main: ahead 1"
+						const parts = tracking.split(":");
+						if (parts.length > 0) {
+							upstream = parts[0].trim();
+							if (parts.length > 1) {
+								trackingStatus = parts[1].trim();
+							}
+						}
 					}
 				}
+
+				// Determine if it's a remote branch
+				const isRemote = fullName.startsWith("remotes/");
+				let branchName = fullName;
+
+				if (isRemote) {
+					// Extract branch name from remotes/origin/branch-name
+					const remoteParts = fullName.split("/");
+					if (remoteParts.length >= 3) {
+						branchName = remoteParts.slice(2).join("/");
+						if (!upstream) {
+							upstream = fullName;
+						}
+					}
+				}
+
+				// For local branches, try to get tracking information if not already parsed
+				if (!isRemote && !trackingStatus) {
+					try {
+						const trackingResult = await executeGenericCommand({
+							command: "git",
+							args: ["status", "-b", "--porcelain=v1"],
+							workingDir: folder,
+						});
+
+						if (trackingResult.code === 0) {
+							const statusLines = trackingResult.stdout.split("\n");
+							const branchLine = statusLines.find((line) =>
+								line.startsWith("##"),
+							);
+							if (branchLine?.includes(branchName)) {
+								// Parse tracking info from status
+								if (branchLine.includes("[gone]")) {
+									trackingStatus = "gone";
+								} else if (branchLine.includes("[ahead")) {
+									const aheadMatch = branchLine.match(/\[ahead (\d+)\]/);
+									if (aheadMatch) {
+										trackingStatus = `ahead ${aheadMatch[1]}`;
+									}
+								} else if (branchLine.includes("[behind")) {
+									const behindMatch = branchLine.match(/\[behind (\d+)\]/);
+									if (behindMatch) {
+										trackingStatus = `behind ${behindMatch[1]}`;
+									}
+								}
+
+								// Extract upstream
+								const upstreamMatch = branchLine.match(/\.\.\.([^\s\]]+)/);
+								if (upstreamMatch) {
+									upstream = upstreamMatch[1];
+								}
+							}
+						}
+					} catch {
+						// Ignore errors getting tracking info for individual branches
+					}
+				}
+
+				branches.push({
+					name: branchName,
+					current: isCurrent,
+					remote: isRemote,
+					upstream,
+					commitHash: commitHash.substring(0, 7), // Short hash
+					commitMessage:
+						commitMessage.trim().length > 100
+							? `${commitMessage.trim().substring(0, 97)}...`
+							: commitMessage.trim() || undefined,
+					trackingStatus,
+				});
 			}
 		}
 

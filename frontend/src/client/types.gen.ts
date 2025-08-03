@@ -177,6 +177,18 @@ export type GetApiV1GitResponse = ({
              * Number of commits behind upstream
              */
             behind?: number;
+            /**
+             * Short commit hash
+             */
+            commitHash?: string;
+            /**
+             * Commit message (truncated)
+             */
+            commitMessage?: string;
+            /**
+             * Tracking status (gone, up to date, etc.)
+             */
+            trackingStatus?: string;
         }>;
     };
 });
@@ -247,6 +259,18 @@ export type PostApiV1GitCheckoutResponse = ({
              * Number of commits behind upstream
              */
             behind?: number;
+            /**
+             * Short commit hash
+             */
+            commitHash?: string;
+            /**
+             * Commit message (truncated)
+             */
+            commitMessage?: string;
+            /**
+             * Tracking status (gone, up to date, etc.)
+             */
+            trackingStatus?: string;
         }>;
     };
 });

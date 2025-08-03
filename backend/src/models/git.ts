@@ -25,6 +25,18 @@ export const GitBranchSchema = z.object({
 		example: 0,
 		description: "Number of commits behind upstream",
 	}),
+	commitHash: z.string().optional().openapi({
+		example: "a1b2c3d",
+		description: "Short commit hash",
+	}),
+	commitMessage: z.string().optional().openapi({
+		example: "Add new feature",
+		description: "Commit message (truncated)",
+	}),
+	trackingStatus: z.string().optional().openapi({
+		example: "gone",
+		description: "Tracking status (gone, up to date, etc.)",
+	}),
 });
 
 export const GitStatusSchema = z.object({

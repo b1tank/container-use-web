@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import {
     AlertCircle,
-    Check,
+    AlertTriangle,
+    ArrowDown,
+    ArrowUp,
+    GitBranch,
+    GitCommit,
     GitMerge,
     RefreshCw,
     RotateCcw,
@@ -42,6 +46,20 @@ export function GitViewer({ folder }: GitViewerProps) {
 
     const gitStatus = gitResponse?.success ? gitResponse.data : null
     const branches = gitStatus?.branches || []
+
+    // Sort branches: current first, then local branches alphabetically, then remote branches
+    const sortedBranches = [...branches].sort((a, b) => {
+        // Current branch always first
+        if (a.current && !b.current) return -1
+        if (!a.current && b.current) return 1
+
+        // Local branches before remote branches
+        if (!a.remote && b.remote) return -1
+        if (a.remote && !b.remote) return 1
+
+        // Within same type, sort alphabetically
+        return a.name.localeCompare(b.name)
+    })
 
     const handleManualRefresh = () => {
         refetch()
@@ -120,7 +138,7 @@ export function GitViewer({ folder }: GitViewerProps) {
         )
     }
 
-    if (!branches?.length) {
+    if (!sortedBranches?.length) {
         return (
             <div className="flex items-center justify-center h-full p-4">
                 <div className="text-center space-y-4 max-w-sm">
@@ -156,11 +174,22 @@ export function GitViewer({ folder }: GitViewerProps) {
                         )}
                     </div>
                     <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <span>
+                                {sortedBranches.filter((b) => !b.remote).length}{" "}
+                                local
+                            </span>
+                            <span className="text-muted-foreground/50">•</span>
+                            <span>
+                                {sortedBranches.filter((b) => b.remote).length}{" "}
+                                remote
+                            </span>
+                        </div>
                         <Badge
                             variant="secondary"
                             className="text-xs h-6 w-6 rounded-full flex items-center justify-center p-0 bg-blue-50 border-blue-200 text-blue-700 font-medium"
                         >
-                            {branches?.length || 0}
+                            {sortedBranches?.length || 0}
                         </Badge>
                         <Button
                             onClick={toggleAutoRefresh}
@@ -199,7 +228,6 @@ export function GitViewer({ folder }: GitViewerProps) {
                                 )}
                             </>
                         )}
-                        {autoRefresh && <span>(auto-refresh enabled)</span>}
                     </div>
                 )}
             </div>
@@ -207,67 +235,74 @@ export function GitViewer({ folder }: GitViewerProps) {
             {/* Branch List Content */}
             <div className="flex-1 overflow-auto">
                 <div className="space-y-2 p-4">
-                    {branches.map((branch: GitBranchType) => (
+                    {sortedBranches.map((branch: GitBranchType) => (
                         <Card
                             key={branch.name}
-                            className={`p-3 transition-all hover:shadow-md hover:bg-muted/50 ${
+                            className={`p-4 transition-all hover:shadow-md hover:bg-muted/50 ${
                                 branch.current
-                                    ? "bg-blue-50/50 border-blue-200"
-                                    : ""
+                                    ? "bg-blue-50/50 border-blue-200 shadow-sm"
+                                    : branch.trackingStatus === "gone"
+                                      ? "bg-red-50/30 border-red-200"
+                                      : ""
                             }`}
                         >
                             <div className="space-y-2">
+                                {/* Main branch info line */}
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <h4 className="font-medium text-sm truncate">
-                                            {branch.name}
-                                        </h4>
-                                        {branch.current && (
-                                            <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        {branch.current && (
-                                            <Badge
-                                                variant="outline"
-                                                className="text-xs font-mono px-2 py-0.5 bg-green-100 border-green-400/70 text-green-800"
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                        {/* Branch icon and name */}
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <GitBranch
+                                                className={`h-4 w-4 flex-shrink-0 ${
+                                                    branch.current
+                                                        ? "text-green-600"
+                                                        : branch.remote
+                                                          ? "text-blue-500"
+                                                          : "text-muted-foreground"
+                                                }`}
+                                            />
+                                            <h4
+                                                className={`font-medium text-sm truncate ${
+                                                    branch.current
+                                                        ? "text-green-700 font-semibold"
+                                                        : branch.remote
+                                                          ? "text-blue-600"
+                                                          : "text-foreground"
+                                                }`}
                                             >
-                                                CURRENT
-                                            </Badge>
-                                        )}
-                                        {branch.remote && (
-                                            <Badge
-                                                variant="secondary"
-                                                className="text-xs"
-                                            >
-                                                remote
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </div>
+                                                {branch.name}
+                                            </h4>
+                                        </div>
 
-                                {/* Branch info and Action Icons on same row */}
-                                <div className="flex items-end justify-between">
-                                    <div className="text-xs text-muted-foreground space-y-1">
-                                        {branch.upstream && (
-                                            <div>
-                                                Upstream: {branch.upstream}
-                                            </div>
-                                        )}
-                                        {(branch.ahead || branch.behind) && (
-                                            <div className="flex gap-2">
-                                                {branch.ahead && (
-                                                    <span className="text-green-600">
-                                                        +{branch.ahead} ahead
-                                                    </span>
-                                                )}
-                                                {branch.behind && (
-                                                    <span className="text-red-600">
-                                                        -{branch.behind} behind
-                                                    </span>
-                                                )}
-                                            </div>
-                                        )}
+                                        {/* Branch type badges */}
+                                        <div className="flex items-center gap-1">
+                                            {branch.remote && (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-xs px-1.5 py-0 h-5 border-blue-300 text-blue-700 bg-blue-50"
+                                                >
+                                                    remote
+                                                </Badge>
+                                            )}
+                                            {branch.trackingStatus ===
+                                                "gone" && (
+                                                <Badge
+                                                    variant="destructive"
+                                                    className="text-xs px-1.5 py-0 h-5 bg-red-100 text-red-700 border-red-300"
+                                                >
+                                                    <AlertTriangle className="h-3 w-3 mr-1" />
+                                                    gone
+                                                </Badge>
+                                            )}
+                                            {branch.current && (
+                                                <Badge
+                                                    variant="default"
+                                                    className="text-xs px-1.5 py-0 h-5 bg-green-100 text-green-700 border-green-300"
+                                                >
+                                                    current
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {/* Action Icons */}
@@ -277,7 +312,7 @@ export function GitViewer({ folder }: GitViewerProps) {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className={`h-6 w-6 p-0 relative transition-all hover:bg-primary/10 ${
+                                                className={`h-7 w-7 p-0 relative transition-all hover:bg-primary/10 ${
                                                     gitStatus?.hasUncommittedChanges
                                                         ? "opacity-50"
                                                         : ""
@@ -307,12 +342,82 @@ export function GitViewer({ folder }: GitViewerProps) {
 
                                         {/* Current branch indicator */}
                                         {branch.current && (
-                                            <div className="h-6 w-6 flex items-center justify-center">
+                                            <div className="h-7 w-7 flex items-center justify-center">
                                                 <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
                                             </div>
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Commit info line */}
+                                {(branch.commitHash ||
+                                    branch.commitMessage) && (
+                                    <div className="flex items-start gap-2 text-xs">
+                                        <GitCommit className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            {branch.commitHash && (
+                                                <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-muted-foreground border">
+                                                    {branch.commitHash}
+                                                </code>
+                                            )}
+                                            {branch.commitMessage && (
+                                                <span
+                                                    className="text-muted-foreground truncate flex-1"
+                                                    title={branch.commitMessage} // Show full message on hover
+                                                >
+                                                    {branch.commitMessage}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Tracking info line */}
+                                {(branch.upstream ||
+                                    branch.trackingStatus ||
+                                    branch.ahead ||
+                                    branch.behind) && (
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <div className="w-3 flex-shrink-0" />{" "}
+                                        {/* Spacer for alignment */}
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            {branch.upstream &&
+                                                !branch.remote && (
+                                                    <span className="flex items-center gap-1">
+                                                        <span>tracks</span>
+                                                        <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono">
+                                                            {branch.upstream}
+                                                        </code>
+                                                    </span>
+                                                )}
+                                            {branch.trackingStatus &&
+                                                branch.trackingStatus !==
+                                                    "gone" && (
+                                                    <span className="text-blue-600 font-medium">
+                                                        [{branch.trackingStatus}
+                                                        ]
+                                                    </span>
+                                                )}
+                                            {(branch.ahead ||
+                                                branch.behind) && (
+                                                <div className="flex items-center gap-1">
+                                                    {branch.ahead && (
+                                                        <span className="flex items-center gap-1 text-green-600 font-medium">
+                                                            <ArrowUp className="h-3 w-3" />
+                                                            {branch.ahead}
+                                                        </span>
+                                                    )}
+                                                    {branch.behind && (
+                                                        <span className="flex items-center gap-1 text-red-600 font-medium">
+                                                            <ArrowDown className="h-3 w-3" />
+                                                            {branch.behind}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </Card>
                     ))}

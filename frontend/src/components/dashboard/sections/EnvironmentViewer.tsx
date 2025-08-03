@@ -196,7 +196,6 @@ export function EnvironmentViewer({
                     <div className="text-xs text-muted-foreground mt-1 space-x-2">
                         {folder && <span>📂 {folder}</span>}
                         {cli && <span>🛠️ {cli}</span>}
-                        {autoRefresh && <span>(auto-refresh enabled)</span>}
                     </div>
                 )}
             </div>
