@@ -15,6 +15,11 @@ import { DefaultService, type GetApiV1GitResponse } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 type GitBranchType = GetApiV1GitResponse["data"]["branches"][number]
 
@@ -174,23 +179,44 @@ export function GitViewer({ folder }: GitViewerProps) {
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <span>
-                                {sortedBranches.filter((b) => !b.remote).length}{" "}
-                                local
-                            </span>
-                            <span className="text-muted-foreground/50">•</span>
-                            <span>
-                                {sortedBranches.filter((b) => b.remote).length}{" "}
-                                remote
-                            </span>
-                        </div>
-                        <Badge
-                            variant="secondary"
-                            className="text-xs h-6 w-6 rounded-full flex items-center justify-center p-0 bg-blue-50 border-blue-200 text-blue-700 font-medium"
-                        >
-                            {sortedBranches?.length || 0}
-                        </Badge>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Badge
+                                    variant="secondary"
+                                    className="text-xs h-6 w-6 rounded-full flex items-center justify-center p-0 bg-blue-50 border-blue-200 text-blue-700 font-medium"
+                                >
+                                    {sortedBranches?.length || 0}
+                                </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" sideOffset={4}>
+                                <div className="text-xs space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-green-400">
+                                            ●
+                                        </span>
+                                        <span>
+                                            {
+                                                sortedBranches.filter(
+                                                    (b) => !b.remote,
+                                                ).length
+                                            }{" "}
+                                            local branches
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-blue-400">●</span>
+                                        <span>
+                                            {
+                                                sortedBranches.filter(
+                                                    (b) => b.remote,
+                                                ).length
+                                            }{" "}
+                                            remote branches
+                                        </span>
+                                    </div>
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
                         <Button
                             onClick={toggleAutoRefresh}
                             size="sm"
