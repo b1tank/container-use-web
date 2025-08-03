@@ -21,6 +21,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { DiffViewer } from "./sections/DiffViewer"
 import { EnvironmentViewer } from "./sections/EnvironmentViewer"
+import { GitViewer } from "./sections/GitViewer"
 import { LogViewer } from "./sections/LogViewer"
 import { TerminalViewer } from "./sections/TerminalViewer"
 import { WatchViewer } from "./sections/WatchViewer"
@@ -384,19 +385,25 @@ export function ContainerUseDashboard({
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <div className="flex items-center justify-center h-full bg-muted/10">
-                                            <div className="text-center space-y-2">
-                                                <div className="text-2xl text-muted-foreground">
-                                                    🌳
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Git Viewer
-                                                </div>
-                                                <div className="text-xs text-muted-foreground/70">
-                                                    Coming soon...
+                                        {folder ? (
+                                            <GitViewer folder={folder} />
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full bg-muted/10">
+                                                <div className="text-center space-y-2">
+                                                    <div className="text-2xl text-muted-foreground">
+                                                        📁
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        No folder selected
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground/70">
+                                                        Select a workspace
+                                                        folder to view git
+                                                        status
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>

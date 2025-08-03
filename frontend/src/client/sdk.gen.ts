@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, GetApiV1FilesData, GetApiV1FilesResponse } from './types.gen';
+import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, GetApiV1FilesData, GetApiV1FilesResponse, GetApiV1GitData, GetApiV1GitResponse, PostApiV1GitCheckoutData, PostApiV1GitCheckoutResponse } from './types.gen';
 
 export class DefaultService {
     /**
@@ -91,6 +91,49 @@ export class DefaultService {
                 path: data.path
             },
             errors: {
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.folder Folder path to get git information for
+     * @returns unknown Git repository information
+     * @throws ApiError
+     */
+    public static getApiV1Git(data: GetApiV1GitData): CancelablePromise<GetApiV1GitResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/git',
+            query: {
+                folder: data.folder
+            },
+            errors: {
+                404: 'Folder not found',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.folder Folder path for git operations
+     * @param data.requestBody
+     * @returns unknown Git checkout result
+     * @throws ApiError
+     */
+    public static postApiV1GitCheckout(data: PostApiV1GitCheckoutData): CancelablePromise<PostApiV1GitCheckoutResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/git/checkout',
+            query: {
+                folder: data.folder
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: 'Bad request (not a git repository or uncommitted changes)',
                 500: 'Internal server error'
             }
         });

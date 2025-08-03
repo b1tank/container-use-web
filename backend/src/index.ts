@@ -8,6 +8,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { environments } from "./routes/environments.js";
 import { files } from "./routes/files.js";
+import { git } from "./routes/git.js";
 import { CLI_COMMANDS, DEFAULT_CLI_PATH } from "./utils/constants.js";
 import { handleFileWatch, handleTerminal } from "./utils/terminal.js";
 
@@ -172,6 +173,9 @@ apiApp.route("/", environments);
 
 // Mount the files routes
 apiApp.route("/", files);
+
+// Mount the git routes
+apiApp.route("/git", git);
 
 // The OpenAPI documentation will be available at /api/v1/doc
 apiApp.doc("/doc", {

@@ -120,3 +120,133 @@ export type GetApiV1FilesResponse = ({
      */
     parent: (string) | null;
 });
+
+export type GetApiV1GitData = {
+    /**
+     * Folder path to get git information for
+     */
+    folder: string;
+};
+
+export type GetApiV1GitResponse = ({
+    /**
+     * Whether the operation was successful
+     */
+    success: boolean;
+    /**
+     * Git repository information
+     */
+    data: {
+        /**
+         * Current branch name
+         */
+        currentBranch: string;
+        /**
+         * Whether the folder is a git repository
+         */
+        isRepository: boolean;
+        /**
+         * Whether there are uncommitted changes
+         */
+        hasUncommittedChanges: boolean;
+        /**
+         * List of all branches
+         */
+        branches: Array<{
+            /**
+             * Branch name
+             */
+            name: string;
+            /**
+             * Whether this is the current branch
+             */
+            current: boolean;
+            /**
+             * Whether this is a remote branch
+             */
+            remote: boolean;
+            /**
+             * Upstream branch name
+             */
+            upstream?: string;
+            /**
+             * Number of commits ahead of upstream
+             */
+            ahead?: number;
+            /**
+             * Number of commits behind upstream
+             */
+            behind?: number;
+        }>;
+    };
+});
+
+export type PostApiV1GitCheckoutData = {
+    /**
+     * Folder path for git operations
+     */
+    folder: string;
+    requestBody?: {
+        /**
+         * Branch name to checkout
+         */
+        branch: string;
+    };
+};
+
+export type PostApiV1GitCheckoutResponse = ({
+    /**
+     * Whether the checkout was successful
+     */
+    success: boolean;
+    /**
+     * Success or error message
+     */
+    message: string;
+    /**
+     * Updated git repository information
+     */
+    data?: {
+        /**
+         * Current branch name
+         */
+        currentBranch: string;
+        /**
+         * Whether the folder is a git repository
+         */
+        isRepository: boolean;
+        /**
+         * Whether there are uncommitted changes
+         */
+        hasUncommittedChanges: boolean;
+        /**
+         * List of all branches
+         */
+        branches: Array<{
+            /**
+             * Branch name
+             */
+            name: string;
+            /**
+             * Whether this is the current branch
+             */
+            current: boolean;
+            /**
+             * Whether this is a remote branch
+             */
+            remote: boolean;
+            /**
+             * Upstream branch name
+             */
+            upstream?: string;
+            /**
+             * Number of commits ahead of upstream
+             */
+            ahead?: number;
+            /**
+             * Number of commits behind upstream
+             */
+            behind?: number;
+        }>;
+    };
+});
