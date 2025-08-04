@@ -330,3 +330,43 @@ export type GetApiV1GitLogResponse = ({
         }>;
     };
 });
+
+export type GetApiV1GitStatusData = {
+    /**
+     * Folder path for git operations
+     */
+    folder: string;
+};
+
+export type GetApiV1GitStatusResponse = ({
+    /**
+     * Whether the operation was successful
+     */
+    success: boolean;
+    /**
+     * Detailed git status information
+     */
+    data: {
+        /**
+         * Whether there are any uncommitted changes
+         */
+        hasChanges: boolean;
+        /**
+         * List of files with changes
+         */
+        files: Array<{
+            /**
+             * Git status code (M=modified, A=added, D=deleted, R=renamed, etc.)
+             */
+            status: string;
+            /**
+             * File path relative to repository root
+             */
+            path: string;
+            /**
+             * Human-readable description of the change
+             */
+            description: string;
+        }>;
+    };
+});

@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, GetApiV1FilesData, GetApiV1FilesResponse, GetApiV1GitData, GetApiV1GitResponse, PostApiV1GitCheckoutData, PostApiV1GitCheckoutResponse, GetApiV1GitLogData, GetApiV1GitLogResponse } from './types.gen';
+import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, GetApiV1FilesData, GetApiV1FilesResponse, GetApiV1GitData, GetApiV1GitResponse, PostApiV1GitCheckoutData, PostApiV1GitCheckoutResponse, GetApiV1GitLogData, GetApiV1GitLogResponse, GetApiV1GitStatusData, GetApiV1GitStatusResponse } from './types.gen';
 
 export class DefaultService {
     /**
@@ -158,6 +158,26 @@ export class DefaultService {
             },
             errors: {
                 400: 'Bad request (not a git repository or branch not found)',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.folder Folder path for git operations
+     * @returns unknown Detailed git status result
+     * @throws ApiError
+     */
+    public static getApiV1GitStatus(data: GetApiV1GitStatusData): CancelablePromise<GetApiV1GitStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/git/status',
+            query: {
+                folder: data.folder
+            },
+            errors: {
+                400: 'Bad request (not a git repository)',
                 500: 'Internal server error'
             }
         });

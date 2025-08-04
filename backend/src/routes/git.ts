@@ -6,6 +6,7 @@ import {
 	GitCheckoutSchema,
 	GitInfoSchema,
 	GitLogSchema,
+	GitStatusDetailSchema,
 } from "../models/git.js";
 import {
 	createCLIErrorResponse,
@@ -175,6 +176,53 @@ export const gitLogRoute = createRoute({
 				},
 			},
 			description: "Bad request (not a git repository or branch not found)",
+		},
+		500: {
+			content: {
+				"application/json": {
+					schema: ErrorSchema,
+				},
+			},
+			description: "Internal server error",
+		},
+	},
+});
+
+// Route to get detailed git status
+export const gitStatusRoute = createRoute({
+	method: "get",
+	path: "/status",
+	request: {
+		query: z.object({
+			folder: z
+				.string()
+				.min(1)
+				.openapi({
+					param: {
+						name: "folder",
+						in: "query",
+					},
+					example: "/Users/b1tank/hello",
+					description: "Folder path for git operations",
+				}),
+		}),
+	},
+	responses: {
+		200: {
+			content: {
+				"application/json": {
+					schema: GitStatusDetailSchema,
+				},
+			},
+			description: "Detailed git status result",
+		},
+		400: {
+			content: {
+				"application/json": {
+					schema: ErrorSchema,
+				},
+			},
+			description: "Bad request (not a git repository)",
 		},
 		500: {
 			content: {
@@ -381,6 +429,93 @@ async function getAllBranches(folder: string): Promise<GitBranch[]> {
 		return branches;
 	} catch {
 		return [];
+	}
+}
+
+/**
+ * Get detailed git status with file changes
+ */
+async function getDetailedGitStatus(folder: string): Promise<{
+	hasChanges: boolean;
+	files: Array<{
+		status: string;
+		path: string;
+		description: string;
+	}>;
+}> {
+	try {
+		const result = await executeGenericCommand({
+			command: "git",
+			args: ["status", "--porcelain"],
+			workingDir: folder,
+		});
+
+		const files: Array<{
+			status: string;
+			path: string;
+			description: string;
+		}> = [];
+
+		if (result.code === 0 && result.stdout.trim()) {
+			const lines = result.stdout.split("\n").filter((line) => line.trim());
+
+			for (const line of lines) {
+				if (line.length >= 3) {
+					const status = line.substring(0, 2);
+					const path = line.substring(3);
+
+					// Parse git status codes and create human-readable descriptions
+					let description = "unknown change";
+
+					// Index status (first character)
+					const indexStatus = status[0];
+					// Working tree status (second character)
+					const workingStatus = status[1];
+
+					if (indexStatus === "M" || workingStatus === "M") {
+						description = "modified";
+					} else if (indexStatus === "A" || workingStatus === "A") {
+						description = "added";
+					} else if (indexStatus === "D" || workingStatus === "D") {
+						description = "deleted";
+					} else if (indexStatus === "R" || workingStatus === "R") {
+						description = "renamed";
+					} else if (indexStatus === "C" || workingStatus === "C") {
+						description = "copied";
+					} else if (indexStatus === "U" || workingStatus === "U") {
+						description = "unmerged";
+					} else if (status === "??") {
+						description = "untracked";
+					} else if (status === "!!") {
+						description = "ignored";
+					}
+
+					// Add more specific descriptions for index vs working tree
+					if (indexStatus !== " " && workingStatus !== " ") {
+						description = `staged & ${description}`;
+					} else if (indexStatus !== " ") {
+						description = `staged ${description}`;
+					}
+
+					files.push({
+						status: status.trim(),
+						path,
+						description,
+					});
+				}
+			}
+		}
+
+		return {
+			hasChanges: files.length > 0,
+			files,
+		};
+	} catch (error) {
+		console.error("Error getting detailed git status:", error);
+		return {
+			hasChanges: false,
+			files: [],
+		};
 	}
 }
 
@@ -674,6 +809,49 @@ git.openapi(gitLogRoute, async (c) => {
 			"Failed to get git log",
 			null,
 			"git log",
+			"unknown",
+			error instanceof Error ? error : undefined,
+		);
+		return c.json(errorResponse, 500);
+	}
+});
+
+// Mount the git status route
+git.openapi(gitStatusRoute, async (c) => {
+	try {
+		const { folder } = c.req.valid("query");
+
+		// Resolve absolute path
+		const absolutePath = path.resolve(folder);
+
+		// Check if folder exists and is a git repository
+		const isRepo = await isGitRepository(absolutePath);
+		if (!isRepo) {
+			const errorResponse = createCLIErrorResponse(
+				"Not a git repository",
+				null,
+				"git status",
+				absolutePath,
+			);
+			return c.json(errorResponse, 400);
+		}
+
+		// Get detailed git status
+		const statusData = await getDetailedGitStatus(absolutePath);
+
+		return c.json(
+			{
+				success: true,
+				data: statusData,
+			},
+			200,
+		);
+	} catch (error) {
+		console.error("Error getting git status:", error);
+		const errorResponse = createCLIErrorResponse(
+			"Failed to get git status",
+			null,
+			"git status",
 			"unknown",
 			error instanceof Error ? error : undefined,
 		);

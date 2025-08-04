@@ -104,6 +104,42 @@ export const GitLogEntrySchema = z.object({
 	}),
 });
 
+export const GitStatusFileEntrySchema = z.object({
+	status: z.string().openapi({
+		example: "M",
+		description:
+			"Git status code (M=modified, A=added, D=deleted, R=renamed, etc.)",
+	}),
+	path: z.string().openapi({
+		example: "src/index.ts",
+		description: "File path relative to repository root",
+	}),
+	description: z.string().openapi({
+		example: "modified",
+		description: "Human-readable description of the change",
+	}),
+});
+
+export const GitStatusDetailSchema = z.object({
+	success: z.boolean().openapi({
+		example: true,
+		description: "Whether the operation was successful",
+	}),
+	data: z
+		.object({
+			hasChanges: z.boolean().openapi({
+				example: true,
+				description: "Whether there are any uncommitted changes",
+			}),
+			files: z.array(GitStatusFileEntrySchema).openapi({
+				description: "List of files with changes",
+			}),
+		})
+		.openapi({
+			description: "Detailed git status information",
+		}),
+});
+
 export const GitLogSchema = z.object({
 	success: z.boolean().openapi({
 		example: true,
@@ -130,3 +166,5 @@ export type GitInfo = z.infer<typeof GitInfoSchema>;
 export type GitCheckout = z.infer<typeof GitCheckoutSchema>;
 export type GitLogEntry = z.infer<typeof GitLogEntrySchema>;
 export type GitLog = z.infer<typeof GitLogSchema>;
+export type GitStatusFileEntry = z.infer<typeof GitStatusFileEntrySchema>;
+export type GitStatusDetail = z.infer<typeof GitStatusDetailSchema>;

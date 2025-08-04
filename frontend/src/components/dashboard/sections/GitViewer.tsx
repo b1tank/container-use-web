@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
 import {
-    AlertCircle,
     AlertTriangle,
     ArrowDown,
     ArrowUp,
+    FileEdit,
     GitBranch,
     Globe,
     History,
@@ -17,6 +17,7 @@ import {
     DefaultService,
     type GetApiV1GitLogResponse,
     type GetApiV1GitResponse,
+    type GetApiV1GitStatusResponse,
 } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -42,6 +43,11 @@ export function GitViewer({ folder }: GitViewerProps) {
     >({})
     const [loadingLog, setLoadingLog] = useState<Record<string, boolean>>({})
     const [showLogTooltip, setShowLogTooltip] = useState<string | null>(null)
+    const [gitStatusData, setGitStatusData] = useState<
+        GetApiV1GitStatusResponse["data"] | null
+    >(null)
+    const [loadingStatus, setLoadingStatus] = useState(false)
+    const [showStatusTooltip, setShowStatusTooltip] = useState(false)
 
     const {
         data: gitResponse,
@@ -144,6 +150,39 @@ export function GitViewer({ folder }: GitViewerProps) {
         },
         [folder, loadingLog, gitLogData, showLogTooltip],
     )
+
+    const handleShowStatus = useCallback(async () => {
+        if (!folder || loadingStatus) return
+
+        // If already loaded and tooltip is open, just close it
+        if (gitStatusData && showStatusTooltip) {
+            setShowStatusTooltip(false)
+            return
+        }
+
+        // If data exists but tooltip is closed, open it
+        if (gitStatusData && !showStatusTooltip) {
+            setShowStatusTooltip(true)
+            return
+        }
+
+        setLoadingStatus(true)
+
+        try {
+            const response = await DefaultService.getApiV1GitStatus({
+                folder,
+            })
+
+            if (response.success) {
+                setGitStatusData(response.data)
+                setShowStatusTooltip(true)
+            }
+        } catch (err) {
+            console.error("Failed to get git status:", err)
+        } finally {
+            setLoadingStatus(false)
+        }
+    }, [folder, loadingStatus, gitStatusData, showStatusTooltip])
 
     // Update last updated timestamp when git data changes
     useEffect(() => {
@@ -300,12 +339,276 @@ export function GitViewer({ folder }: GitViewerProps) {
                                     {gitStatus.currentBranch}
                                 </Badge>
                                 {gitStatus.hasUncommittedChanges && (
-                                    <Badge
-                                        variant="outline"
-                                        className="text-xs px-1.5 py-0 h-5 border-orange-300 text-orange-700 bg-orange-50"
-                                    >
-                                        ⚡ uncommitted changes
-                                    </Badge>
+                                    <Tooltip open={showStatusTooltip}>
+                                        <TooltipTrigger asChild>
+                                            <Badge
+                                                variant="outline"
+                                                className="text-xs px-1.5 py-0 h-5 border-orange-300 text-orange-700 bg-orange-50 flex items-center gap-1 cursor-pointer hover:bg-orange-100 transition-colors"
+                                                onClick={handleShowStatus}
+                                            >
+                                                <FileEdit className="h-3 w-3" />
+                                                Uncommitted
+                                            </Badge>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                            side="bottom"
+                                            sideOffset={8}
+                                            className="max-w-sm p-0 border shadow-lg"
+                                            onPointerDownOutside={() =>
+                                                setShowStatusTooltip(false)
+                                            }
+                                        >
+                                            {gitStatusData && (
+                                                <div className="bg-background border rounded-lg shadow-lg overflow-hidden">
+                                                    <div className="px-3 py-2 bg-muted/50 border-b">
+                                                        <div className="flex items-center gap-2">
+                                                            <FileEdit className="h-4 w-4 text-muted-foreground" />
+                                                            <span className="font-medium text-sm">
+                                                                Git Status
+                                                            </span>
+                                                            {loadingStatus && (
+                                                                <RefreshCw className="h-3 w-3 animate-spin text-muted-foreground" />
+                                                            )}
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-6 w-6 p-0 ml-auto"
+                                                                onClick={() =>
+                                                                    setShowStatusTooltip(
+                                                                        false,
+                                                                    )
+                                                                }
+                                                            >
+                                                                ✕
+                                                            </Button>
+                                                        </div>
+                                                        {gitStatusData &&
+                                                            gitStatusData.files
+                                                                .length > 0 && (
+                                                                <div className="mt-2 flex flex-wrap gap-1 text-xs">
+                                                                    <span className="text-muted-foreground">
+                                                                        Legend:
+                                                                    </span>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <span className="text-blue-500 font-bold">
+                                                                            ●
+                                                                        </span>
+                                                                        <span className="text-muted-foreground">
+                                                                            Modified
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <span className="text-green-500 font-bold">
+                                                                            +
+                                                                        </span>
+                                                                        <span className="text-muted-foreground">
+                                                                            Added
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <span className="text-red-500 font-bold">
+                                                                            −
+                                                                        </span>
+                                                                        <span className="text-muted-foreground">
+                                                                            Deleted
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <span className="text-orange-500 font-bold">
+                                                                            ?
+                                                                        </span>
+                                                                        <span className="text-muted-foreground">
+                                                                            Untracked
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                    </div>
+                                                    <div className="max-h-64 overflow-y-auto">
+                                                        {gitStatusData.files
+                                                            .length === 0 ? (
+                                                            <div className="p-4 text-center text-muted-foreground text-sm">
+                                                                No changes found
+                                                            </div>
+                                                        ) : (
+                                                            <div className="space-y-0">
+                                                                {gitStatusData.files.map(
+                                                                    (
+                                                                        file,
+                                                                        index,
+                                                                    ) => {
+                                                                        // Determine color scheme based on status
+                                                                        const getStatusColor =
+                                                                            (
+                                                                                status: string,
+                                                                            ) => {
+                                                                                const firstChar =
+                                                                                    status[0]
+                                                                                const secondChar =
+                                                                                    status[1]
+
+                                                                                // Priority: staged changes, then working directory changes
+                                                                                if (
+                                                                                    firstChar ===
+                                                                                        "M" ||
+                                                                                    secondChar ===
+                                                                                        "M"
+                                                                                ) {
+                                                                                    return {
+                                                                                        bg: "bg-blue-50 border-blue-200",
+                                                                                        statusBg:
+                                                                                            "bg-blue-100 border-blue-300 text-blue-700",
+                                                                                        icon: "●",
+                                                                                        iconColor:
+                                                                                            "text-blue-500",
+                                                                                    }
+                                                                                } else if (
+                                                                                    firstChar ===
+                                                                                        "A" ||
+                                                                                    secondChar ===
+                                                                                        "A"
+                                                                                ) {
+                                                                                    return {
+                                                                                        bg: "bg-green-50 border-green-200",
+                                                                                        statusBg:
+                                                                                            "bg-green-100 border-green-300 text-green-700",
+                                                                                        icon: "+",
+                                                                                        iconColor:
+                                                                                            "text-green-500",
+                                                                                    }
+                                                                                } else if (
+                                                                                    firstChar ===
+                                                                                        "D" ||
+                                                                                    secondChar ===
+                                                                                        "D"
+                                                                                ) {
+                                                                                    return {
+                                                                                        bg: "bg-red-50 border-red-200",
+                                                                                        statusBg:
+                                                                                            "bg-red-100 border-red-300 text-red-700",
+                                                                                        icon: "−",
+                                                                                        iconColor:
+                                                                                            "text-red-500",
+                                                                                    }
+                                                                                } else if (
+                                                                                    firstChar ===
+                                                                                        "R" ||
+                                                                                    secondChar ===
+                                                                                        "R"
+                                                                                ) {
+                                                                                    return {
+                                                                                        bg: "bg-purple-50 border-purple-200",
+                                                                                        statusBg:
+                                                                                            "bg-purple-100 border-purple-300 text-purple-700",
+                                                                                        icon: "↻",
+                                                                                        iconColor:
+                                                                                            "text-purple-500",
+                                                                                    }
+                                                                                } else if (
+                                                                                    firstChar ===
+                                                                                        "C" ||
+                                                                                    secondChar ===
+                                                                                        "C"
+                                                                                ) {
+                                                                                    return {
+                                                                                        bg: "bg-cyan-50 border-cyan-200",
+                                                                                        statusBg:
+                                                                                            "bg-cyan-100 border-cyan-300 text-cyan-700",
+                                                                                        icon: "⧉",
+                                                                                        iconColor:
+                                                                                            "text-cyan-500",
+                                                                                    }
+                                                                                } else if (
+                                                                                    status ===
+                                                                                    "??"
+                                                                                ) {
+                                                                                    return {
+                                                                                        bg: "bg-orange-50 border-orange-200",
+                                                                                        statusBg:
+                                                                                            "bg-orange-100 border-orange-300 text-orange-700",
+                                                                                        icon: "?",
+                                                                                        iconColor:
+                                                                                            "text-orange-500",
+                                                                                    }
+                                                                                } else if (
+                                                                                    firstChar ===
+                                                                                        "U" ||
+                                                                                    secondChar ===
+                                                                                        "U"
+                                                                                ) {
+                                                                                    return {
+                                                                                        bg: "bg-pink-50 border-pink-200",
+                                                                                        statusBg:
+                                                                                            "bg-pink-100 border-pink-300 text-pink-700",
+                                                                                        icon: "!",
+                                                                                        iconColor:
+                                                                                            "text-pink-500",
+                                                                                    }
+                                                                                } else {
+                                                                                    return {
+                                                                                        bg: "bg-gray-50 border-gray-200",
+                                                                                        statusBg:
+                                                                                            "bg-gray-100 border-gray-300 text-gray-700",
+                                                                                        icon: "●",
+                                                                                        iconColor:
+                                                                                            "text-gray-500",
+                                                                                    }
+                                                                                }
+                                                                            }
+
+                                                                        const colorScheme =
+                                                                            getStatusColor(
+                                                                                file.status,
+                                                                            )
+
+                                                                        return (
+                                                                            <div
+                                                                                key={`${file.path}-${index}`}
+                                                                                className={`p-3 border-b last:border-b-0 hover:bg-muted/30 transition-colors ${colorScheme.bg}`}
+                                                                            >
+                                                                                <div className="space-y-1">
+                                                                                    <div className="flex items-start gap-2">
+                                                                                        <div className="flex items-center gap-1">
+                                                                                            <span
+                                                                                                className={`text-sm font-bold ${colorScheme.iconColor}`}
+                                                                                            >
+                                                                                                {
+                                                                                                    colorScheme.icon
+                                                                                                }
+                                                                                            </span>
+                                                                                            <code
+                                                                                                className={`px-1.5 py-0.5 rounded text-xs font-mono border ${colorScheme.statusBg}`}
+                                                                                            >
+                                                                                                {
+                                                                                                    file.status
+                                                                                                }
+                                                                                            </code>
+                                                                                        </div>
+                                                                                        <div className="flex-1 min-w-0">
+                                                                                            <div className="text-sm font-medium text-foreground break-all">
+                                                                                                {
+                                                                                                    file.path
+                                                                                                }
+                                                                                            </div>
+                                                                                            <div className="text-xs text-muted-foreground mt-1 capitalize">
+                                                                                                {
+                                                                                                    file.description
+                                                                                                }
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        )
+                                                                    },
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </TooltipContent>
+                                    </Tooltip>
                                 )}
                             </>
                         )}
@@ -539,45 +842,79 @@ export function GitViewer({ folder }: GitViewerProps) {
 
                                         {/* Checkout action button - for non-current branches */}
                                         {!branch.current && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className={`h-7 w-7 p-0 relative transition-all hover:bg-primary/10 ${
-                                                    gitStatus?.hasUncommittedChanges
-                                                        ? "opacity-50"
-                                                        : ""
-                                                }`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    // For remote branches, pass the full remote path (e.g., "container-use/social-tapir")
-                                                    // For local branches, pass just the branch name
-                                                    const branchToCheckout =
-                                                        branch.remote
-                                                            ? branch.name
-                                                            : branch.name
-                                                    handleCheckout(
-                                                        branchToCheckout,
-                                                    )
-                                                }}
-                                                disabled={
-                                                    checkingOut ===
-                                                        branch.name ||
-                                                    gitStatus?.hasUncommittedChanges
-                                                }
-                                                title={
-                                                    gitStatus?.hasUncommittedChanges
-                                                        ? "Cannot checkout - uncommitted changes"
-                                                        : branch.remote
-                                                          ? "Create local tracking branch and checkout"
-                                                          : "Checkout Branch"
-                                                }
-                                            >
-                                                {checkingOut === branch.name ? (
-                                                    <RefreshCw className="h-3 w-3 animate-spin" />
-                                                ) : (
-                                                    <Shuffle className="h-3 w-3" />
-                                                )}
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <div>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className={`h-7 w-7 p-0 relative transition-all hover:bg-primary/10 ${
+                                                                gitStatus?.hasUncommittedChanges
+                                                                    ? "opacity-50"
+                                                                    : ""
+                                                            }`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                // For remote branches, pass the full remote path (e.g., "container-use/social-tapir")
+                                                                // For local branches, pass just the branch name
+                                                                const branchToCheckout =
+                                                                    branch.remote
+                                                                        ? branch.name
+                                                                        : branch.name
+                                                                handleCheckout(
+                                                                    branchToCheckout,
+                                                                )
+                                                            }}
+                                                            disabled={
+                                                                checkingOut ===
+                                                                    branch.name ||
+                                                                gitStatus?.hasUncommittedChanges
+                                                            }
+                                                        >
+                                                            {checkingOut ===
+                                                            branch.name ? (
+                                                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                                            ) : (
+                                                                <Shuffle className="h-3 w-3" />
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                </TooltipTrigger>
+                                                <TooltipContent
+                                                    side="bottom"
+                                                    sideOffset={4}
+                                                >
+                                                    {gitStatus?.hasUncommittedChanges ? (
+                                                        <div className="max-w-xs">
+                                                            <div className="flex items-start gap-2 p-2">
+                                                                <FileEdit className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                                                <div className="text-xs text-foreground">
+                                                                    <p className="font-medium text-yellow-700">
+                                                                        Working
+                                                                        Directory
+                                                                        Modified
+                                                                    </p>
+                                                                    <p className="text-muted-foreground mt-1">
+                                                                        You have
+                                                                        unsaved
+                                                                        changes.
+                                                                        Commit
+                                                                        or stash
+                                                                        them
+                                                                        before
+                                                                        switching
+                                                                        branches.
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : branch.remote ? (
+                                                        "Create local tracking branch and checkout"
+                                                    ) : (
+                                                        "Checkout Branch"
+                                                    )}
+                                                </TooltipContent>
+                                            </Tooltip>
                                         )}
 
                                         {/* Current branch indicator */}
@@ -665,24 +1002,6 @@ export function GitViewer({ folder }: GitViewerProps) {
                         </Card>
                     ))}
                 </div>
-
-                {/* Warning for uncommitted changes */}
-                {gitStatus?.hasUncommittedChanges && (
-                    <div className="mx-4 mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <div className="flex items-start gap-2">
-                            <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                            <div className="text-xs text-yellow-700">
-                                <p className="font-medium">
-                                    Uncommitted Changes
-                                </p>
-                                <p>
-                                    You have uncommitted changes. Commit or
-                                    stash them before switching branches.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     )
