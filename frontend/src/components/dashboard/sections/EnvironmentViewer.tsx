@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import {
+    Container,
     FileText,
     GitCompare,
     RefreshCw,
@@ -13,6 +14,12 @@ import { DefaultService, type Environment } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 type ViewType = "terminal" | "logs" | "diff"
 
@@ -162,12 +169,36 @@ export function EnvironmentViewer({
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <Badge
-                            variant="secondary"
-                            className="text-xs h-6 w-6 rounded-full flex items-center justify-center p-0 bg-emerald-50 border-emerald-200 text-emerald-700 font-medium"
-                        >
-                            {environments?.length || 0}
-                        </Badge>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Badge
+                                        variant="secondary"
+                                        className="text-xs h-6 w-6 rounded-full flex items-center justify-center p-0 bg-emerald-50 border-emerald-200 text-emerald-700 font-medium"
+                                    >
+                                        {environments?.length || 0}
+                                    </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                    className="bg-background border border-border shadow-lg"
+                                    arrowProps={{
+                                        className:
+                                            "fill-background bg-background border-0 size-2",
+                                    }}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Container className="h-4 w-4 text-emerald-600" />
+                                        <p>
+                                            {environments?.length || 0}{" "}
+                                            environment
+                                            {(environments?.length || 0) !== 1
+                                                ? "s"
+                                                : ""}
+                                        </p>
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                         <Button
                             onClick={toggleAutoRefresh}
                             size="sm"

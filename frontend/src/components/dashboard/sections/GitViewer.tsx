@@ -273,13 +273,18 @@ export function GitViewer({ folder }: GitViewerProps) {
                                     {sortedBranches?.length || 0}
                                 </Badge>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom" sideOffset={4}>
+                            <TooltipContent
+                                side="top"
+                                className="bg-background border border-border shadow-lg"
+                                arrowProps={{
+                                    className:
+                                        "fill-background bg-background border-0 size-2",
+                                }}
+                            >
                                 <div className="text-xs space-y-1">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-green-400">
-                                            ●
-                                        </span>
-                                        <span>
+                                        <GitBranch className="h-3 w-3 text-green-600" />
+                                        <span className="text-foreground">
                                             {
                                                 sortedBranches.filter(
                                                     (b) => !b.remote,
@@ -289,8 +294,8 @@ export function GitViewer({ folder }: GitViewerProps) {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-blue-400">●</span>
-                                        <span>
+                                        <Globe className="h-3 w-3 text-blue-600" />
+                                        <span className="text-foreground">
                                             {
                                                 sortedBranches.filter(
                                                     (b) => b.remote,
@@ -351,19 +356,22 @@ export function GitViewer({ folder }: GitViewerProps) {
                                             </Badge>
                                         </TooltipTrigger>
                                         <TooltipContent
-                                            side="bottom"
-                                            sideOffset={8}
-                                            className="max-w-sm p-0 border shadow-lg"
+                                            side="top"
+                                            className="max-w-sm p-0 bg-background border border-border shadow-lg"
+                                            arrowProps={{
+                                                className:
+                                                    "fill-background bg-background border-0 size-2",
+                                            }}
                                             onPointerDownOutside={() =>
                                                 setShowStatusTooltip(false)
                                             }
                                         >
                                             {gitStatusData && (
-                                                <div className="bg-background border rounded-lg shadow-lg overflow-hidden">
-                                                    <div className="px-3 py-2 bg-muted/50 border-b">
+                                                <div className="bg-background border-0 rounded-lg overflow-hidden">
+                                                    <div className="px-3 py-2 bg-muted/30 border-b border-border">
                                                         <div className="flex items-center gap-2">
                                                             <FileEdit className="h-4 w-4 text-muted-foreground" />
-                                                            <span className="font-medium text-sm">
+                                                            <span className="font-medium text-sm text-foreground">
                                                                 Git Status
                                                             </span>
                                                             {loadingStatus && (
@@ -386,9 +394,6 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                             gitStatusData.files
                                                                 .length > 0 && (
                                                                 <div className="mt-2 flex flex-wrap gap-1 text-xs">
-                                                                    <span className="text-muted-foreground">
-                                                                        Legend:
-                                                                    </span>
                                                                     <div className="flex items-center gap-1">
                                                                         <span className="text-blue-500 font-bold">
                                                                             ●
@@ -720,7 +725,6 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                     disabled={
                                                         loadingLog[branch.name]
                                                     }
-                                                    title="View Git Log"
                                                 >
                                                     {loadingLog[branch.name] ? (
                                                         <RefreshCw className="h-3 w-3 animate-spin" />
@@ -730,19 +734,22 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent
-                                                side="left"
-                                                sideOffset={8}
-                                                className="max-w-md p-0 border shadow-lg"
+                                                side="top"
+                                                className="max-w-2xl p-0 bg-background border border-border shadow-lg"
+                                                arrowProps={{
+                                                    className:
+                                                        "fill-background bg-background border-0 size-2",
+                                                }}
                                                 onPointerDownOutside={() =>
                                                     setShowLogTooltip(null)
                                                 }
                                             >
                                                 {gitLogData[branch.name] && (
-                                                    <div className="bg-background border rounded-lg shadow-lg overflow-hidden">
-                                                        <div className="px-3 py-2 bg-muted/50 border-b">
+                                                    <div className="bg-background border-0 rounded-lg overflow-hidden">
+                                                        <div className="px-3 py-2 bg-muted/30 border-b border-border">
                                                             <div className="flex items-center gap-2">
                                                                 <History className="h-4 w-4 text-muted-foreground" />
-                                                                <span className="font-medium text-sm">
+                                                                <span className="font-medium text-sm text-foreground">
                                                                     Git Log:{" "}
                                                                     {
                                                                         gitLogData[
@@ -766,7 +773,7 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                                 </Button>
                                                             </div>
                                                         </div>
-                                                        <div className="max-h-80 overflow-y-auto">
+                                                        <div className="max-h-96 overflow-y-auto">
                                                             {gitLogData[
                                                                 branch.name
                                                             ]?.commits
@@ -790,7 +797,7 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                                                 key={
                                                                                     commit.hash
                                                                                 }
-                                                                                className={`p-3 border-b last:border-b-0 hover:bg-muted/30 ${
+                                                                                className={`p-3 border-b last:border-b-0 hover:bg-muted/30 transition-colors ${
                                                                                     index %
                                                                                         2 ===
                                                                                     0
@@ -806,7 +813,7 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                                                             }
                                                                                         </code>
                                                                                         <div className="flex-1 min-w-0">
-                                                                                            <div className="text-sm font-medium text-foreground truncate">
+                                                                                            <div className="text-sm font-medium text-foreground break-words leading-relaxed">
                                                                                                 {
                                                                                                     commit.message
                                                                                                 }
@@ -882,7 +889,11 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                 </TooltipTrigger>
                                                 <TooltipContent
                                                     side="bottom"
-                                                    sideOffset={4}
+                                                    className="bg-background border border-border shadow-lg"
+                                                    arrowProps={{
+                                                        className:
+                                                            "fill-background bg-background border-0 size-2",
+                                                    }}
                                                 >
                                                     {gitStatus?.hasUncommittedChanges ? (
                                                         <div className="max-w-xs">
@@ -909,9 +920,15 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                             </div>
                                                         </div>
                                                     ) : branch.remote ? (
-                                                        "Create local tracking branch and checkout"
+                                                        <span className="text-foreground">
+                                                            Create local
+                                                            tracking branch and
+                                                            checkout
+                                                        </span>
                                                     ) : (
-                                                        "Checkout Branch"
+                                                        <span className="text-foreground">
+                                                            Checkout Branch
+                                                        </span>
                                                     )}
                                                 </TooltipContent>
                                             </Tooltip>
@@ -938,7 +955,7 @@ export function GitViewer({ folder }: GitViewerProps) {
                                             )}
                                             {branch.commitMessage && (
                                                 <span
-                                                    className="text-muted-foreground truncate flex-1"
+                                                    className="text-muted-foreground break-words flex-1 leading-relaxed"
                                                     title={branch.commitMessage} // Show full message on hover
                                                 >
                                                     {branch.commitMessage}
