@@ -5,11 +5,12 @@ import {
     ArrowDown,
     ArrowUp,
     GitBranch,
-    GitMerge,
+    Globe,
     History,
     Link2,
     RefreshCw,
     RotateCcw,
+    Shuffle,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import {
@@ -363,10 +364,13 @@ export function GitViewer({ folder }: GitViewerProps) {
                                             {branch.remote && (
                                                 <Badge
                                                     variant="outline"
-                                                    className="text-xs px-1.5 py-0 h-5 border-blue-300 text-blue-700 bg-blue-50"
+                                                    className="text-xs px-1.5 py-0 h-5 border-blue-300 text-blue-700 bg-blue-50 flex items-center gap-1"
                                                 >
+                                                    <Globe className="h-3 w-3" />
                                                     {branch.name.includes("/")
-                                                        ? `remote: ${branch.name.split("/")[0]}` // Show "remote: container-use"
+                                                        ? branch.name.split(
+                                                              "/",
+                                                          )[0] // Show just the remote name
                                                         : "remote"}
                                                 </Badge>
                                             )}
@@ -571,7 +575,7 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                 {checkingOut === branch.name ? (
                                                     <RefreshCw className="h-3 w-3 animate-spin" />
                                                 ) : (
-                                                    <GitMerge className="h-3 w-3" />
+                                                    <Shuffle className="h-3 w-3" />
                                                 )}
                                             </Button>
                                         )}
