@@ -5,14 +5,18 @@ import {
     ArrowDown,
     ArrowUp,
     GitBranch,
-    GitCommit,
     GitMerge,
+    History,
     Link2,
     RefreshCw,
     RotateCcw,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import { DefaultService, type GetApiV1GitResponse } from "@/client"
+import {
+    DefaultService,
+    type GetApiV1GitLogResponse,
+    type GetApiV1GitResponse,
+} from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -32,6 +36,11 @@ export function GitViewer({ folder }: GitViewerProps) {
     const [autoRefresh, setAutoRefresh] = useState(false)
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
     const [checkingOut, setCheckingOut] = useState<string | null>(null)
+    const [gitLogData, setGitLogData] = useState<
+        Record<string, GetApiV1GitLogResponse["data"] | null>
+    >({})
+    const [loadingLog, setLoadingLog] = useState<Record<string, boolean>>({})
+    const [showLogTooltip, setShowLogTooltip] = useState<string | null>(null)
 
     const {
         data: gitResponse,
@@ -98,6 +107,41 @@ export function GitViewer({ folder }: GitViewerProps) {
             }
         },
         [folder, checkingOut, refetch],
+    )
+
+    const handleShowLog = useCallback(
+        async (branch: string) => {
+            if (!folder || loadingLog[branch]) return
+
+            // If already loaded, just toggle the tooltip
+            if (gitLogData[branch]) {
+                setShowLogTooltip(showLogTooltip === branch ? null : branch)
+                return
+            }
+
+            setLoadingLog((prev) => ({ ...prev, [branch]: true }))
+
+            try {
+                const response = await DefaultService.getApiV1GitLog({
+                    folder,
+                    branch,
+                    limit: "10",
+                })
+
+                if (response.success) {
+                    setGitLogData((prev) => ({
+                        ...prev,
+                        [branch]: response.data,
+                    }))
+                    setShowLogTooltip(branch)
+                }
+            } catch (err) {
+                console.error("Failed to get git log:", err)
+            } finally {
+                setLoadingLog((prev) => ({ ...prev, [branch]: false }))
+            }
+        },
+        [folder, loadingLog, gitLogData, showLogTooltip],
     )
 
     // Update last updated timestamp when git data changes
@@ -349,6 +393,146 @@ export function GitViewer({ folder }: GitViewerProps) {
 
                                     {/* Action Icons */}
                                     <div className="flex gap-1 items-center">
+                                        {/* Git Log action button - for all branches */}
+                                        <Tooltip
+                                            open={
+                                                showLogTooltip === branch.name
+                                            }
+                                        >
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0 relative transition-all hover:bg-primary/10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleShowLog(
+                                                            branch.name,
+                                                        )
+                                                    }}
+                                                    disabled={
+                                                        loadingLog[branch.name]
+                                                    }
+                                                    title="View Git Log"
+                                                >
+                                                    {loadingLog[branch.name] ? (
+                                                        <RefreshCw className="h-3 w-3 animate-spin" />
+                                                    ) : (
+                                                        <History className="h-3 w-3" />
+                                                    )}
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent
+                                                side="left"
+                                                sideOffset={8}
+                                                className="max-w-md p-0 border shadow-lg"
+                                                onPointerDownOutside={() =>
+                                                    setShowLogTooltip(null)
+                                                }
+                                            >
+                                                {gitLogData[branch.name] && (
+                                                    <div className="bg-background border rounded-lg shadow-lg overflow-hidden">
+                                                        <div className="px-3 py-2 bg-muted/50 border-b">
+                                                            <div className="flex items-center gap-2">
+                                                                <History className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="font-medium text-sm">
+                                                                    Git Log:{" "}
+                                                                    {
+                                                                        gitLogData[
+                                                                            branch
+                                                                                .name
+                                                                        ]
+                                                                            ?.branch
+                                                                    }
+                                                                </span>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-6 w-6 p-0 ml-auto"
+                                                                    onClick={() =>
+                                                                        setShowLogTooltip(
+                                                                            null,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    ✕
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                        <div className="max-h-80 overflow-y-auto">
+                                                            {gitLogData[
+                                                                branch.name
+                                                            ]?.commits
+                                                                ?.length ===
+                                                            0 ? (
+                                                                <div className="p-4 text-center text-muted-foreground text-sm">
+                                                                    No commits
+                                                                    found
+                                                                </div>
+                                                            ) : (
+                                                                <div className="space-y-0">
+                                                                    {gitLogData[
+                                                                        branch
+                                                                            .name
+                                                                    ]?.commits?.map(
+                                                                        (
+                                                                            commit,
+                                                                            index,
+                                                                        ) => (
+                                                                            <div
+                                                                                key={
+                                                                                    commit.hash
+                                                                                }
+                                                                                className={`p-3 border-b last:border-b-0 hover:bg-muted/30 ${
+                                                                                    index %
+                                                                                        2 ===
+                                                                                    0
+                                                                                        ? "bg-background"
+                                                                                        : "bg-muted/20"
+                                                                                }`}
+                                                                            >
+                                                                                <div className="space-y-1">
+                                                                                    <div className="flex items-start gap-2">
+                                                                                        <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-muted-foreground border">
+                                                                                            {
+                                                                                                commit.hash
+                                                                                            }
+                                                                                        </code>
+                                                                                        <div className="flex-1 min-w-0">
+                                                                                            <div className="text-sm font-medium text-foreground truncate">
+                                                                                                {
+                                                                                                    commit.message
+                                                                                                }
+                                                                                            </div>
+                                                                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                                                                                <span>
+                                                                                                    {
+                                                                                                        commit.author
+                                                                                                    }
+                                                                                                </span>
+                                                                                                <span>
+                                                                                                    •
+                                                                                                </span>
+                                                                                                <span>
+                                                                                                    {
+                                                                                                        commit.relative
+                                                                                                    }
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        ),
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </TooltipContent>
+                                        </Tooltip>
+
                                         {/* Checkout action button - for non-current branches */}
                                         {!branch.current && (
                                             <Button

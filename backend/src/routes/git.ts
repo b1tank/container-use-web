@@ -2,7 +2,11 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { ErrorSchema } from "../models/environment.js";
-import { GitCheckoutSchema, GitInfoSchema } from "../models/git.js";
+import {
+	GitCheckoutSchema,
+	GitInfoSchema,
+	GitLogSchema,
+} from "../models/git.js";
 import {
 	createCLIErrorResponse,
 	executeGenericCommand,
@@ -102,6 +106,75 @@ export const gitCheckoutRoute = createRoute({
 				},
 			},
 			description: "Bad request (not a git repository or uncommitted changes)",
+		},
+		500: {
+			content: {
+				"application/json": {
+					schema: ErrorSchema,
+				},
+			},
+			description: "Internal server error",
+		},
+	},
+});
+
+// Route to get git log for a branch
+export const gitLogRoute = createRoute({
+	method: "get",
+	path: "/log",
+	request: {
+		query: z.object({
+			folder: z
+				.string()
+				.min(1)
+				.openapi({
+					param: {
+						name: "folder",
+						in: "query",
+					},
+					example: "/Users/b1tank/hello",
+					description: "Folder path for git operations",
+				}),
+			branch: z
+				.string()
+				.min(1)
+				.openapi({
+					param: {
+						name: "branch",
+						in: "query",
+					},
+					example: "main",
+					description: "Branch name to get log for",
+				}),
+			limit: z
+				.string()
+				.optional()
+				.openapi({
+					param: {
+						name: "limit",
+						in: "query",
+					},
+					example: "10",
+					description: "Number of commits to retrieve (default: 10)",
+				}),
+		}),
+	},
+	responses: {
+		200: {
+			content: {
+				"application/json": {
+					schema: GitLogSchema,
+				},
+			},
+			description: "Git log result",
+		},
+		400: {
+			content: {
+				"application/json": {
+					schema: ErrorSchema,
+				},
+			},
+			description: "Bad request (not a git repository or branch not found)",
 		},
 		500: {
 			content: {
@@ -329,6 +402,69 @@ async function hasUncommittedChanges(folder: string): Promise<boolean> {
 }
 
 /**
+ * Get git log for a specific branch
+ */
+async function getGitLog(
+	folder: string,
+	branch: string,
+	limit = 10,
+): Promise<{
+	branch: string;
+	commits: Array<{
+		hash: string;
+		message: string;
+		author: string;
+		date: string;
+		relative: string;
+	}>;
+}> {
+	try {
+		// Use git log with format to get structured data
+		const result = await executeGenericCommand({
+			command: "git",
+			args: [
+				"log",
+				branch,
+				"--oneline",
+				"--format=%H|%s|%an|%ai|%ar",
+				`-${limit}`,
+			],
+			workingDir: folder,
+		});
+
+		const commits = [];
+
+		if (result.code === 0 && result.stdout.trim()) {
+			const lines = result.stdout.split("\n").filter((line) => line.trim());
+
+			for (const line of lines) {
+				const parts = line.split("|");
+				if (parts.length >= 5) {
+					commits.push({
+						hash: parts[0].substring(0, 7), // Short hash
+						message: parts[1],
+						author: parts[2],
+						date: parts[3],
+						relative: parts[4],
+					});
+				}
+			}
+		}
+
+		return {
+			branch,
+			commits,
+		};
+	} catch (error) {
+		console.error("Error getting git log:", error);
+		return {
+			branch,
+			commits: [],
+		};
+	}
+}
+
+/**
  * Get git status for a folder
  */
 async function getGitStatus(folder: string): Promise<GitStatus> {
@@ -491,6 +627,53 @@ git.openapi(gitCheckoutRoute, async (c) => {
 			"Failed to checkout branch",
 			null,
 			"git checkout",
+			"unknown",
+			error instanceof Error ? error : undefined,
+		);
+		return c.json(errorResponse, 500);
+	}
+});
+
+// Mount the git log route
+git.openapi(gitLogRoute, async (c) => {
+	try {
+		const { folder, branch, limit } = c.req.valid("query");
+
+		// Resolve absolute path
+		const absolutePath = path.resolve(folder);
+
+		// Check if folder exists and is a git repository
+		const isRepo = await isGitRepository(absolutePath);
+		if (!isRepo) {
+			const errorResponse = createCLIErrorResponse(
+				"Not a git repository",
+				null,
+				"git log",
+				absolutePath,
+			);
+			return c.json(errorResponse, 400);
+		}
+
+		// Get git log for the specified branch
+		const logData = await getGitLog(
+			absolutePath,
+			branch,
+			limit ? parseInt(limit, 10) : 10,
+		);
+
+		return c.json(
+			{
+				success: true,
+				data: logData,
+			},
+			200,
+		);
+	} catch (error) {
+		console.error("Error getting git log:", error);
+		const errorResponse = createCLIErrorResponse(
+			"Failed to get git log",
+			null,
+			"git log",
 			"unknown",
 			error instanceof Error ? error : undefined,
 		);

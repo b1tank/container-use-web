@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, GetApiV1FilesData, GetApiV1FilesResponse, GetApiV1GitData, GetApiV1GitResponse, PostApiV1GitCheckoutData, PostApiV1GitCheckoutResponse } from './types.gen';
+import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, GetApiV1FilesData, GetApiV1FilesResponse, GetApiV1GitData, GetApiV1GitResponse, PostApiV1GitCheckoutData, PostApiV1GitCheckoutResponse, GetApiV1GitLogData, GetApiV1GitLogResponse } from './types.gen';
 
 export class DefaultService {
     /**
@@ -134,6 +134,30 @@ export class DefaultService {
             mediaType: 'application/json',
             errors: {
                 400: 'Bad request (not a git repository or uncommitted changes)',
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.folder Folder path for git operations
+     * @param data.branch Branch name to get log for
+     * @param data.limit Number of commits to retrieve (default: 10)
+     * @returns unknown Git log result
+     * @throws ApiError
+     */
+    public static getApiV1GitLog(data: GetApiV1GitLogData): CancelablePromise<GetApiV1GitLogResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/git/log',
+            query: {
+                folder: data.folder,
+                branch: data.branch,
+                limit: data.limit
+            },
+            errors: {
+                400: 'Bad request (not a git repository or branch not found)',
                 500: 'Internal server error'
             }
         });

@@ -274,3 +274,59 @@ export type PostApiV1GitCheckoutResponse = ({
         }>;
     };
 });
+
+export type GetApiV1GitLogData = {
+    /**
+     * Branch name to get log for
+     */
+    branch: string;
+    /**
+     * Folder path for git operations
+     */
+    folder: string;
+    /**
+     * Number of commits to retrieve (default: 10)
+     */
+    limit?: string;
+};
+
+export type GetApiV1GitLogResponse = ({
+    /**
+     * Whether the operation was successful
+     */
+    success: boolean;
+    /**
+     * Git log information for a branch
+     */
+    data: {
+        /**
+         * Branch name
+         */
+        branch: string;
+        /**
+         * List of recent commits
+         */
+        commits: Array<{
+            /**
+             * Commit hash (short)
+             */
+            hash: string;
+            /**
+             * Commit message
+             */
+            message: string;
+            /**
+             * Commit author
+             */
+            author: string;
+            /**
+             * Commit date in ISO format
+             */
+            date: string;
+            /**
+             * Relative time from now
+             */
+            relative: string;
+        }>;
+    };
+});

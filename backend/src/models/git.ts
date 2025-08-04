@@ -81,7 +81,52 @@ export const GitCheckoutSchema = z.object({
 	}),
 });
 
+export const GitLogEntrySchema = z.object({
+	hash: z.string().openapi({
+		example: "a1b2c3d",
+		description: "Commit hash (short)",
+	}),
+	message: z.string().openapi({
+		example: "Add new feature",
+		description: "Commit message",
+	}),
+	author: z.string().openapi({
+		example: "John Doe",
+		description: "Commit author",
+	}),
+	date: z.string().openapi({
+		example: "2024-01-01T12:00:00Z",
+		description: "Commit date in ISO format",
+	}),
+	relative: z.string().openapi({
+		example: "2 hours ago",
+		description: "Relative time from now",
+	}),
+});
+
+export const GitLogSchema = z.object({
+	success: z.boolean().openapi({
+		example: true,
+		description: "Whether the operation was successful",
+	}),
+	data: z
+		.object({
+			branch: z.string().openapi({
+				example: "main",
+				description: "Branch name",
+			}),
+			commits: z.array(GitLogEntrySchema).openapi({
+				description: "List of recent commits",
+			}),
+		})
+		.openapi({
+			description: "Git log information for a branch",
+		}),
+});
+
 export type GitBranch = z.infer<typeof GitBranchSchema>;
 export type GitStatus = z.infer<typeof GitStatusSchema>;
 export type GitInfo = z.infer<typeof GitInfoSchema>;
 export type GitCheckout = z.infer<typeof GitCheckoutSchema>;
+export type GitLogEntry = z.infer<typeof GitLogEntrySchema>;
+export type GitLog = z.infer<typeof GitLogSchema>;
