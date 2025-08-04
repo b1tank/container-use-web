@@ -6,6 +6,7 @@ import {
     GitBranch,
     GitCompare,
     Plug,
+    RefreshCw,
     Server,
     Terminal,
 } from "lucide-react"
@@ -84,6 +85,21 @@ export function ContainerUseDashboard({
 
     const handleWatchToggle = useCallback(() => {
         setWatchConnected((prev) => !prev)
+    }, [])
+
+    const handleTerminalReload = useCallback((environmentId: string) => {
+        // Force reload the terminal by clearing and setting the active view
+        setActiveViews((prev) => ({
+            ...prev,
+            terminal: null,
+        }))
+        // Use setTimeout to ensure the terminal is properly cleared before reloading
+        setTimeout(() => {
+            setActiveViews((prev) => ({
+                ...prev,
+                terminal: environmentId,
+            }))
+        }, 100)
     }, [])
 
     const handleWorkspaceFolderChange = useCallback(
@@ -298,14 +314,34 @@ export function ContainerUseDashboard({
                                                     Terminal
                                                 </span>
                                             </div>
-                                            {activeViews.terminal && (
-                                                <Badge
-                                                    variant="outline"
-                                                    className="text-xs font-mono px-2 py-0.5 bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md transition-all"
-                                                >
-                                                    {activeViews.terminal}
-                                                </Badge>
-                                            )}
+                                            <div className="flex items-center gap-2">
+                                                {activeViews.terminal && (
+                                                    <>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-xs font-mono px-2 py-0.5 bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md transition-all"
+                                                        >
+                                                            {
+                                                                activeViews.terminal
+                                                            }
+                                                        </Badge>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 w-6 p-0 hover:bg-primary/10"
+                                                            onClick={() =>
+                                                                activeViews.terminal &&
+                                                                handleTerminalReload(
+                                                                    activeViews.terminal,
+                                                                )
+                                                            }
+                                                            title={`Reload terminal for ${activeViews.terminal}`}
+                                                        >
+                                                            <RefreshCw className="h-3 w-3" />
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </CardTitle>
                                     </CardHeader>
                                     <Separator />
