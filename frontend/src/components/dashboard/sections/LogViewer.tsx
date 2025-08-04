@@ -114,28 +114,37 @@ export function LogViewer({ environmentId, folder, cli }: LogViewerProps) {
             <div className="flex-1 overflow-auto" ref={containerRef}>
                 <div className="p-4">
                     {error ? (
-                        <div className="text-sm text-red-600">
-                            Error: {error.message}
+                        <div className="text-sm text-red-600 p-3 bg-red-50 border border-red-200 rounded">
+                            <strong>Error:</strong> {error.message}
                         </div>
                     ) : isLoading && !logData ? (
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground flex items-center justify-center h-20">
+                            <RefreshCw className="animate-spin h-4 w-4 mr-2" />
                             Loading logs...
                         </div>
                     ) : logData ? (
-                        <div className="space-y-1">
-                            {logData.logs
-                                .split("\n")
-                                .map((line: string, index: number) => (
-                                    <div
-                                        key={`log-${index}-${line.substring(0, 20)}`}
-                                        className="text-xs font-mono whitespace-pre-wrap"
-                                    >
-                                        {line}
-                                    </div>
-                                ))}
+                        <div className="border rounded-md bg-white overflow-hidden">
+                            {logData.logs.trim() === "" ? (
+                                <div className="p-4 text-sm text-muted-foreground text-center bg-gray-50">
+                                    No logs available
+                                </div>
+                            ) : (
+                                <div className="space-y-1 p-3">
+                                    {logData.logs
+                                        .split("\n")
+                                        .map((line: string, index: number) => (
+                                            <div
+                                                key={`log-${index}-${line.substring(0, 20)}`}
+                                                className="text-xs font-mono whitespace-pre-wrap"
+                                            >
+                                                {line}
+                                            </div>
+                                        ))}
+                                </div>
+                            )}
                         </div>
                     ) : (
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground text-center h-20 flex items-center justify-center">
                             No logs available
                         </div>
                     )}
