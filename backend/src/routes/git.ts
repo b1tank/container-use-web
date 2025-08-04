@@ -237,10 +237,11 @@ async function getAllBranches(folder: string): Promise<GitBranch[]> {
 				let branchName = fullName;
 
 				if (isRemote) {
-					// Extract branch name from remotes/origin/branch-name
+					// For remote branches, keep the remote/branch format (e.g., "container-use/social-tapir")
+					// but strip the "remotes/" prefix
 					const remoteParts = fullName.split("/");
 					if (remoteParts.length >= 3) {
-						branchName = remoteParts.slice(2).join("/");
+						branchName = remoteParts.slice(1).join("/"); // Keep "container-use/social-tapir"
 						if (!upstream) {
 							upstream = fullName;
 						}
@@ -433,9 +434,33 @@ git.openapi(gitCheckoutRoute, async (c) => {
 		}
 
 		// Perform checkout
+		let checkoutArgs: string[];
+
+		// Check if it's a remote branch (contains '/')
+		if (branch.includes("/")) {
+			// For remote branches, create a local tracking branch
+			// Extract the branch name (last part after '/')
+			const localBranchName = branch.split("/").pop();
+			if (!localBranchName) {
+				const errorResponse = createCLIErrorResponse(
+					"Invalid remote branch name",
+					null,
+					"git checkout",
+					absolutePath,
+				);
+				return c.json(errorResponse, 400);
+			}
+
+			// Use git checkout -b localName remoteName to create tracking branch
+			checkoutArgs = ["checkout", "-b", localBranchName, branch];
+		} else {
+			// For local branches, use regular checkout
+			checkoutArgs = ["checkout", branch];
+		}
+
 		const result = await executeGenericCommand({
 			command: "git",
-			args: ["checkout", branch],
+			args: checkoutArgs,
 			workingDir: absolutePath,
 		});
 

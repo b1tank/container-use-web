@@ -7,6 +7,7 @@ import {
     GitBranch,
     GitCommit,
     GitMerge,
+    Link2,
     RefreshCw,
     RotateCcw,
 } from "lucide-react"
@@ -242,15 +243,24 @@ export function GitViewer({ folder }: GitViewerProps) {
                     </div>
                 </div>
                 {folder && (
-                    <div className="text-xs text-muted-foreground mt-1 space-x-2">
+                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
                         <span>📂 {folder}</span>
                         {gitStatus && (
                             <>
-                                <span>🌿 {gitStatus.currentBranch}</span>
+                                <Badge
+                                    variant="outline"
+                                    className="text-xs px-1.5 py-0 h-5 border-green-300 text-green-700 bg-green-50 flex items-center gap-1"
+                                >
+                                    <GitBranch className="h-3 w-3" />
+                                    {gitStatus.currentBranch}
+                                </Badge>
                                 {gitStatus.hasUncommittedChanges && (
-                                    <span className="text-orange-600">
+                                    <Badge
+                                        variant="outline"
+                                        className="text-xs px-1.5 py-0 h-5 border-orange-300 text-orange-700 bg-orange-50"
+                                    >
                                         ⚡ uncommitted changes
-                                    </span>
+                                    </Badge>
                                 )}
                             </>
                         )}
@@ -296,7 +306,11 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                           : "text-foreground"
                                                 }`}
                                             >
-                                                {branch.name}
+                                                {branch.remote
+                                                    ? branch.name
+                                                          .split("/")
+                                                          .slice(-1)[0] // Show only the branch name part
+                                                    : branch.name}
                                             </h4>
                                         </div>
 
@@ -307,7 +321,9 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                     variant="outline"
                                                     className="text-xs px-1.5 py-0 h-5 border-blue-300 text-blue-700 bg-blue-50"
                                                 >
-                                                    remote
+                                                    {branch.name.includes("/")
+                                                        ? `remote: ${branch.name.split("/")[0]}` // Show "remote: container-use"
+                                                        : "remote"}
                                                 </Badge>
                                             )}
                                             {branch.trackingStatus ===
@@ -333,8 +349,8 @@ export function GitViewer({ folder }: GitViewerProps) {
 
                                     {/* Action Icons */}
                                     <div className="flex gap-1 items-center">
-                                        {/* Checkout action button - only for non-current, non-remote branches */}
-                                        {!branch.current && !branch.remote && (
+                                        {/* Checkout action button - for non-current branches */}
+                                        {!branch.current && (
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -345,7 +361,15 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                 }`}
                                                 onClick={(e) => {
                                                     e.stopPropagation()
-                                                    handleCheckout(branch.name)
+                                                    // For remote branches, pass the full remote path (e.g., "container-use/social-tapir")
+                                                    // For local branches, pass just the branch name
+                                                    const branchToCheckout =
+                                                        branch.remote
+                                                            ? branch.name
+                                                            : branch.name
+                                                    handleCheckout(
+                                                        branchToCheckout,
+                                                    )
                                                 }}
                                                 disabled={
                                                     checkingOut ===
@@ -355,7 +379,9 @@ export function GitViewer({ folder }: GitViewerProps) {
                                                 title={
                                                     gitStatus?.hasUncommittedChanges
                                                         ? "Cannot checkout - uncommitted changes"
-                                                        : "Checkout Branch"
+                                                        : branch.remote
+                                                          ? "Create local tracking branch and checkout"
+                                                          : "Checkout Branch"
                                                 }
                                             >
                                                 {checkingOut === branch.name ? (
@@ -379,7 +405,6 @@ export function GitViewer({ folder }: GitViewerProps) {
                                 {(branch.commitHash ||
                                     branch.commitMessage) && (
                                     <div className="flex items-start gap-2 text-xs">
-                                        <GitCommit className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
                                         <div className="flex items-center gap-2 flex-1 min-w-0">
                                             {branch.commitHash && (
                                                 <code className="bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-muted-foreground border">
@@ -404,17 +429,21 @@ export function GitViewer({ folder }: GitViewerProps) {
                                     branch.ahead ||
                                     branch.behind) && (
                                     <div className="flex items-center gap-2 text-xs">
-                                        <div className="w-3 flex-shrink-0" />{" "}
-                                        {/* Spacer for alignment */}
                                         <div className="flex items-center gap-2 text-muted-foreground">
                                             {branch.upstream &&
                                                 !branch.remote && (
-                                                    <span className="flex items-center gap-1">
-                                                        <span>tracks</span>
-                                                        <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono">
+                                                    <div className="flex items-center gap-1">
+                                                        <div className="text-gray-500 flex items-center">
+                                                            <Link2 className="h-3 w-3" />
+                                                        </div>
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="text-xs px-1.5 py-0 h-5 border-blue-300 text-blue-700 bg-blue-50 flex items-center gap-1"
+                                                        >
+                                                            <GitBranch className="h-3 w-3" />
                                                             {branch.upstream}
-                                                        </code>
-                                                    </span>
+                                                        </Badge>
+                                                    </div>
                                                 )}
                                             {branch.trackingStatus &&
                                                 branch.trackingStatus !==
