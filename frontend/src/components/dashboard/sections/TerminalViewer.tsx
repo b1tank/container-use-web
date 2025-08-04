@@ -43,10 +43,15 @@ export function TerminalViewer({
                 background: "#000000",
                 foreground: "#ffffff",
                 cursor: "#ffffff",
+                cursorAccent: "#000000",
+                selectionBackground: "rgba(255, 255, 255, 0.3)",
             },
             fontSize: 12,
             fontFamily:
                 '"Cascadia Code", "Fira Code", "JetBrains Mono", "SF Mono", Consolas, "Liberation Mono", Menlo, Monaco, monospace',
+            allowTransparency: true,
+            scrollback: 1000,
+            convertEol: true, // Convert \n to \r\n
         })
 
         const fitAddon = new FitAddon()
@@ -75,9 +80,26 @@ export function TerminalViewer({
                 websocketRef.current = websocket
 
                 websocket.onopen = () => {
-                    terminal.writeln(
-                        "\r\n\x1b[32mConnected to environment terminal!\x1b[0m",
-                    )
+                    // Give the terminal a moment to initialize before sending resize
+                    setTimeout(() => {
+                        if (fitAddonRef.current) {
+                            fitAddonRef.current.fit()
+                            const dimensions =
+                                fitAddonRef.current.proposeDimensions()
+                            if (
+                                dimensions &&
+                                websocket.readyState === WebSocket.OPEN
+                            ) {
+                                websocket.send(
+                                    JSON.stringify({
+                                        type: "resize",
+                                        cols: dimensions.cols,
+                                        rows: dimensions.rows,
+                                    }),
+                                )
+                            }
+                        }
+                    }, 100)
                 }
 
                 websocket.onmessage = (event) => {
@@ -133,6 +155,23 @@ export function TerminalViewer({
 
         // Also listen to window resize events as fallback
         window.addEventListener("resize", handleResize)
+
+        // Handle terminal resize events
+        terminal.onResize(({ cols, rows }) => {
+            if (
+                websocketRef.current &&
+                websocketRef.current.readyState === WebSocket.OPEN
+            ) {
+                // Send resize message to backend
+                websocketRef.current.send(
+                    JSON.stringify({
+                        type: "resize",
+                        cols,
+                        rows,
+                    }),
+                )
+            }
+        })
 
         // Connect to WebSocket
         connectWebSocket()

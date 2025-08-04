@@ -54,8 +54,7 @@ const getEnhancedEnv = () => {
  * - Any CLI command: handleTerminal(ws, { command: CLI_COMMANDS.LIST, workingDir: "/path", cliPath: "/usr/bin/container-use" })
  */
 export const handleTerminal = (
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	ws: any,
+	ws: WebSocket,
 	options: TerminalOptions = {},
 ): void => {
 	const { command, environmentId, workingDir, cliPath } = options;
@@ -70,8 +69,10 @@ export const handleTerminal = (
 		cwd: workingDir || process.cwd(),
 		env,
 		encoding: "utf-8",
-		cols: 80,
+		cols: 120,
 		rows: 30,
+		handleFlowControl: false, // Disable flow control to prevent blocking
+		useConpty: false, // Use legacy mode for better compatibility
 	});
 
 	// Set up event listeners for the pseudo-terminal
@@ -100,6 +101,18 @@ export const handleTerminal = (
 	// Set up event listener for WebSocket messages
 	// Data flow: client -> WebSocket -> pty+shell
 	ws.addEventListener("message", (event: MessageEvent) => {
+		// Check if this is a resize message (JSON format from frontend)
+		if (typeof event.data === "string" && event.data.startsWith("{")) {
+			try {
+				const message = JSON.parse(event.data);
+				if (message.type === "resize" && message.cols && message.rows) {
+					ptyShell.resize(message.cols, message.rows);
+					return;
+				}
+			} catch {
+				// Not a valid JSON message, treat as terminal input
+			}
+		}
 		ptyShell.write(event.data);
 	});
 
@@ -110,45 +123,47 @@ export const handleTerminal = (
 
 	// Bootstrap based on command type
 	if (command && cliPath) {
-		switch (command) {
-			case CLI_COMMANDS.TERMINAL:
-				if (environmentId) {
-					ptyShell.write(
-						`\x1b[32mConnected to environment: ${environmentId}\x1b[0m\r\n`,
-					);
-					ptyShell.write(
-						`\x1b[36mWorking folder: ${workingDir || process.cwd()}\x1b[0m\r\n`,
-					);
-					ptyShell.write(
-						`\x1b[33mStarting container-use terminal...\x1b[0m\r\n`,
-					);
-					ptyShell.write(`${cliPath} terminal ${environmentId}\r\n`);
-				}
-				break;
-			case CLI_COMMANDS.WATCH:
-				ptyShell.write(
-					`\x1b[32mStarting watch mode for all environments\x1b[0m\r\n`,
-				);
-				ptyShell.write(
-					`\x1b[36mWorking folder: ${workingDir || process.cwd()}\x1b[0m\r\n`,
-				);
-				ptyShell.write(
-					`\x1b[33mInitializing container-use watch...\x1b[0m\r\n`,
-				);
-				ptyShell.write(`${cliPath} watch\r\n`);
-				break;
-			default:
-				// For other commands (LIST, LOG, DIFF), just run the command
-				ptyShell.write(
-					`\x1b[33mExecuting container-use ${command}...\x1b[0m\r\n`,
-				);
-				if (environmentId) {
-					ptyShell.write(`${cliPath} ${command} ${environmentId}\r\n`);
-				} else {
-					ptyShell.write(`${cliPath} ${command}\r\n`);
-				}
-				break;
-		}
+		// Give the shell a moment to initialize properly
+		setTimeout(() => {
+			switch (command) {
+				case CLI_COMMANDS.TERMINAL:
+					if (environmentId) {
+						// Clear any existing prompt and execute the command
+						ptyShell.write("\u0003"); // Send Ctrl+C to clear any running command
+						setTimeout(() => {
+							ptyShell.write(`clear\r`); // Clear the screen with just CR
+							setTimeout(() => {
+								ptyShell.write(`${cliPath} terminal ${environmentId}\r`);
+							}, 50);
+						}, 50);
+					}
+					break;
+				case CLI_COMMANDS.WATCH:
+					// Clear any existing prompt and execute the command
+					ptyShell.write("\u0003"); // Send Ctrl+C to clear any running command
+					setTimeout(() => {
+						ptyShell.write(`clear\r`); // Clear the screen with just CR
+						setTimeout(() => {
+							ptyShell.write(`${cliPath} watch\r`);
+						}, 50);
+					}, 50);
+					break;
+				default:
+					// For other commands (LIST, LOG, DIFF), just run the command
+					ptyShell.write("\u0003"); // Send Ctrl+C to clear any running command
+					setTimeout(() => {
+						ptyShell.write(`clear\r`); // Clear the screen with just CR
+						setTimeout(() => {
+							if (environmentId) {
+								ptyShell.write(`${cliPath} ${command} ${environmentId}\r`);
+							} else {
+								ptyShell.write(`${cliPath} ${command}\r`);
+							}
+						}, 50);
+					}, 50);
+					break;
+			}
+		}, 200); // Increased delay to let shell initialize
 	}
 };
 
@@ -158,8 +173,7 @@ export const handleTerminal = (
  * @param ws WebSocket connection from @hono/node-ws
  * @param filePath Absolute path to the file to watch
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const handleFileWatch = (ws: any, filePath: string): void => {
+export const handleFileWatch = (ws: WebSocket, filePath: string): void => {
 	let watcher: FSWatcher | null = null;
 
 	const sendFileContent = async () => {
