@@ -6,13 +6,14 @@ import {
     GitCompare,
     GitMerge,
     GitPullRequest,
+    Loader2,
     RefreshCw,
     RotateCcw,
     Terminal,
     ToggleLeft,
     ToggleRight,
 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { DefaultService, type Environment } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -59,6 +60,31 @@ export function EnvironmentViewer({
 }: EnvironmentViewerProps) {
     const [autoRefresh, setAutoRefresh] = useState(false)
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+    const [actionInProgress, setActionInProgress] = useState<
+        Record<string, ActionType | null>
+    >({})
+
+    const handleEnvironmentAction = useCallback(
+        (environmentId: string, actionType: ActionType) => {
+            // Set action as in progress
+            setActionInProgress((prev) => ({
+                ...prev,
+                [environmentId]: actionType,
+            }))
+
+            // Call the original action handler
+            onEnvironmentAction?.(environmentId, actionType)
+
+            // Reset action state after 3 seconds
+            setTimeout(() => {
+                setActionInProgress((prev) => ({
+                    ...prev,
+                    [environmentId]: null,
+                }))
+            }, 3000)
+        },
+        [onEnvironmentAction],
+    )
 
     const {
         data: environments,
@@ -285,30 +311,55 @@ export function EnvironmentViewer({
                                     {/* Horizontal Action Stack */}
                                     <div className="flex items-center justify-between">
                                         {/* Environment Actions Group (Left) */}
-                                        <div className="flex items-center bg-muted/30 rounded-md p-1 gap-0.5">
+                                        <div
+                                            className={`flex items-center rounded-md p-1 gap-0.5 transition-all ${
+                                                actionInProgress[env.id || ""]
+                                                    ? "bg-gradient-to-r from-muted/50 to-muted/30 border border-border/50"
+                                                    : "bg-muted/30"
+                                            }`}
+                                        >
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            className="h-6 w-6 p-0 rounded hover:bg-emerald-100 hover:text-emerald-700 transition-all"
+                                                            className="h-6 w-6 p-0 rounded hover:bg-emerald-100 hover:text-emerald-700 transition-all relative"
+                                                            disabled={
+                                                                actionInProgress[
+                                                                    env.id || ""
+                                                                ] === "apply"
+                                                            }
                                                             onClick={(e) => {
                                                                 e.stopPropagation()
                                                                 env.id &&
-                                                                    onEnvironmentAction?.(
+                                                                    handleEnvironmentAction(
                                                                         env.id,
                                                                         "apply",
                                                                     )
                                                             }}
                                                         >
-                                                            <GitPullRequest className="h-3 w-3" />
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] === "apply" ? (
+                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                            ) : (
+                                                                <GitPullRequest className="h-3 w-3" />
+                                                            )}
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] === "apply" && (
+                                                                <div className="absolute inset-0 bg-emerald-500/20 rounded animate-pulse" />
+                                                            )}
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>
-                                                            Apply Environment
-                                                            Changes
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] === "apply"
+                                                                ? "Applying Changes..."
+                                                                : "Apply Environment Changes"}
                                                         </p>
                                                     </TooltipContent>
                                                 </Tooltip>
@@ -320,23 +371,42 @@ export function EnvironmentViewer({
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            className="h-6 w-6 p-0 rounded hover:bg-blue-100 hover:text-blue-700 transition-all"
+                                                            className="h-6 w-6 p-0 rounded hover:bg-blue-100 hover:text-blue-700 transition-all relative"
+                                                            disabled={
+                                                                actionInProgress[
+                                                                    env.id || ""
+                                                                ] === "merge"
+                                                            }
                                                             onClick={(e) => {
                                                                 e.stopPropagation()
                                                                 env.id &&
-                                                                    onEnvironmentAction?.(
+                                                                    handleEnvironmentAction(
                                                                         env.id,
                                                                         "merge",
                                                                     )
                                                             }}
                                                         >
-                                                            <GitMerge className="h-3 w-3" />
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] === "merge" ? (
+                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                            ) : (
+                                                                <GitMerge className="h-3 w-3" />
+                                                            )}
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] === "merge" && (
+                                                                <div className="absolute inset-0 bg-blue-500/20 rounded animate-pulse" />
+                                                            )}
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>
-                                                            Merge Environment
-                                                            Changes
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] === "merge"
+                                                                ? "Merging Changes..."
+                                                                : "Merge Environment Changes"}
                                                         </p>
                                                     </TooltipContent>
                                                 </Tooltip>
@@ -348,22 +418,43 @@ export function EnvironmentViewer({
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
-                                                            className="h-6 w-6 p-0 rounded hover:bg-purple-100 hover:text-purple-700 transition-all"
+                                                            className="h-6 w-6 p-0 rounded hover:bg-purple-100 hover:text-purple-700 transition-all relative"
+                                                            disabled={
+                                                                actionInProgress[
+                                                                    env.id || ""
+                                                                ] === "checkout"
+                                                            }
                                                             onClick={(e) => {
                                                                 e.stopPropagation()
                                                                 env.id &&
-                                                                    onEnvironmentAction?.(
+                                                                    handleEnvironmentAction(
                                                                         env.id,
                                                                         "checkout",
                                                                     )
                                                             }}
                                                         >
-                                                            <GitBranch className="h-3 w-3" />
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] === "checkout" ? (
+                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                            ) : (
+                                                                <GitBranch className="h-3 w-3" />
+                                                            )}
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] ===
+                                                                "checkout" && (
+                                                                <div className="absolute inset-0 bg-purple-500/20 rounded animate-pulse" />
+                                                            )}
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
                                                         <p>
-                                                            Checkout Environment
+                                                            {actionInProgress[
+                                                                env.id || ""
+                                                            ] === "checkout"
+                                                                ? "Checking Out..."
+                                                                : "Checkout Environment"}
                                                         </p>
                                                     </TooltipContent>
                                                 </Tooltip>
