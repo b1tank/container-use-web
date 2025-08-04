@@ -13,6 +13,9 @@ export const CLI_COMMANDS = {
 	WATCH: "watch",
 	TERMINAL: "terminal",
 	FILE_WATCH: "file-watch",
+	APPLY: "apply",
+	MERGE: "merge",
+	CHECKOUT: "checkout",
 } as const;
 
 // CLI command type

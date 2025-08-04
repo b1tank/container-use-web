@@ -11,6 +11,7 @@ import {
     Terminal,
 } from "lucide-react"
 import { useCallback, useState } from "react"
+import { DefaultService } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/resizable"
 import { Separator } from "@/components/ui/separator"
 import { DiffViewer } from "./sections/DiffViewer"
+import type { ActionType } from "./sections/EnvironmentViewer"
 import { EnvironmentViewer } from "./sections/EnvironmentViewer"
 import { GitViewer } from "./sections/GitViewer"
 import { LogViewer } from "./sections/LogViewer"
@@ -101,6 +103,50 @@ export function ContainerUseDashboard({
             }))
         }, 100)
     }, [])
+
+    const handleEnvironmentAction = useCallback(
+        async (environmentId: string, actionType: ActionType) => {
+            try {
+                console.log(
+                    `Executing ${actionType} for environment:`,
+                    environmentId,
+                )
+
+                if (actionType === "apply") {
+                    const result =
+                        await DefaultService.postApiV1EnvironmentsByIdApply({
+                            id: environmentId,
+                            ...(folder && { folder }),
+                            ...(cli && { cli }),
+                        })
+                    console.log("Apply result:", result)
+                    // You could add a toast notification here for success
+                } else if (actionType === "merge") {
+                    const result =
+                        await DefaultService.postApiV1EnvironmentsByIdMerge({
+                            id: environmentId,
+                            ...(folder && { folder }),
+                            ...(cli && { cli }),
+                        })
+                    console.log("Merge result:", result)
+                    // You could add a toast notification here for success
+                } else if (actionType === "checkout") {
+                    const result =
+                        await DefaultService.postApiV1EnvironmentsByIdCheckout({
+                            id: environmentId,
+                            ...(folder && { folder }),
+                            ...(cli && { cli }),
+                        })
+                    console.log("Checkout result:", result)
+                    // You could add a toast notification here for success
+                }
+            } catch (error) {
+                console.error(`Failed to ${actionType} environment:`, error)
+                // You could add a toast notification here for error
+            }
+        },
+        [folder, cli],
+    )
 
     const handleWorkspaceFolderChange = useCallback(
         (newFolder: string) => {
@@ -397,6 +443,9 @@ export function ContainerUseDashboard({
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
                                         <EnvironmentViewer
                                             onViewAction={handleViewAction}
+                                            onEnvironmentAction={
+                                                handleEnvironmentAction
+                                            }
                                             folder={folder}
                                             cli={cli}
                                             activeViews={activeViews}

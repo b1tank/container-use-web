@@ -1,9 +1,12 @@
 import * as os from "node:os";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
+	EnvironmentApplySchema,
+	EnvironmentCheckoutSchema,
 	EnvironmentDiffSchema,
 	EnvironmentListSchema,
 	EnvironmentLogsSchema,
+	EnvironmentMergeSchema,
 	ErrorSchema,
 } from "../models/environment.js";
 import {
@@ -183,6 +186,186 @@ export const environmentDiffRoute = createRoute({
 	},
 });
 
+// Route to apply environment changes
+export const environmentApplyRoute = createRoute({
+	method: "post",
+	path: "/environments/{id}/apply",
+	request: {
+		params: z.object({
+			id: z.string().openapi({
+				param: {
+					name: "id",
+					in: "path",
+				},
+				example: "sharing-loon",
+				description: "Environment ID",
+			}),
+		}),
+		query: z.object({
+			folder: z
+				.string()
+				.optional()
+				.openapi({
+					param: {
+						name: "folder",
+						in: "query",
+					},
+					example: "/Users/b1tank/hello",
+					description: "Working folder for the CLI command",
+				}),
+			cli: z
+				.string()
+				.optional()
+				.openapi({
+					param: {
+						name: "cli",
+						in: "query",
+					},
+					example: "/Users/b1tank/container-use/container-use",
+					description: "Path to the container-use CLI",
+				}),
+		}),
+	},
+	responses: {
+		200: {
+			content: {
+				"application/json": {
+					schema: EnvironmentApplySchema,
+				},
+			},
+			description: "Environment applied successfully",
+		},
+		500: {
+			content: {
+				"application/json": {
+					schema: ErrorSchema,
+				},
+			},
+			description: "Internal server error",
+		},
+	},
+});
+
+// Route to merge environment changes
+export const environmentMergeRoute = createRoute({
+	method: "post",
+	path: "/environments/{id}/merge",
+	request: {
+		params: z.object({
+			id: z.string().openapi({
+				param: {
+					name: "id",
+					in: "path",
+				},
+				example: "sharing-loon",
+				description: "Environment ID",
+			}),
+		}),
+		query: z.object({
+			folder: z
+				.string()
+				.optional()
+				.openapi({
+					param: {
+						name: "folder",
+						in: "query",
+					},
+					example: "/Users/b1tank/hello",
+					description: "Working folder for the CLI command",
+				}),
+			cli: z
+				.string()
+				.optional()
+				.openapi({
+					param: {
+						name: "cli",
+						in: "query",
+					},
+					example: "/Users/b1tank/container-use/container-use",
+					description: "Path to the container-use CLI",
+				}),
+		}),
+	},
+	responses: {
+		200: {
+			content: {
+				"application/json": {
+					schema: EnvironmentMergeSchema,
+				},
+			},
+			description: "Environment merged successfully",
+		},
+		500: {
+			content: {
+				"application/json": {
+					schema: ErrorSchema,
+				},
+			},
+			description: "Internal server error",
+		},
+	},
+});
+
+// Route to checkout environment
+export const environmentCheckoutRoute = createRoute({
+	method: "post",
+	path: "/environments/{id}/checkout",
+	request: {
+		params: z.object({
+			id: z.string().openapi({
+				param: {
+					name: "id",
+					in: "path",
+				},
+				example: "sharing-loon",
+				description: "Environment ID",
+			}),
+		}),
+		query: z.object({
+			folder: z
+				.string()
+				.optional()
+				.openapi({
+					param: {
+						name: "folder",
+						in: "query",
+					},
+					example: "/Users/b1tank/hello",
+					description: "Working folder for the CLI command",
+				}),
+			cli: z
+				.string()
+				.optional()
+				.openapi({
+					param: {
+						name: "cli",
+						in: "query",
+					},
+					example: "/Users/b1tank/container-use/container-use",
+					description: "Path to the container-use CLI",
+				}),
+		}),
+	},
+	responses: {
+		200: {
+			content: {
+				"application/json": {
+					schema: EnvironmentCheckoutSchema,
+				},
+			},
+			description: "Environment checked out successfully",
+		},
+		500: {
+			content: {
+				"application/json": {
+					schema: ErrorSchema,
+				},
+			},
+			description: "Internal server error",
+		},
+	},
+});
+
 export const environments = new OpenAPIHono();
 
 // Mount the environment list route
@@ -322,6 +505,162 @@ environments.openapi(environmentDiffRoute, async (c) => {
 			"Failed to fetch environment diff",
 			null,
 			`${cliPath} ${CLI_COMMANDS.DIFF}`,
+			workingDir,
+			error instanceof Error ? error : undefined,
+		);
+		return c.json(errorResponse, 500);
+	}
+});
+
+// Mount the environment apply route
+environments.openapi(environmentApplyRoute, async (c) => {
+	const { id } = c.req.valid("param");
+	const { folder, cli } = c.req.valid("query");
+
+	// Get the folder parameter from query string, default to home folder
+	const workingDir = folder || os.homedir();
+	// Get the CLI command path from query string, default to constant
+	const cliPath = cli || DEFAULT_CLI_PATH;
+
+	try {
+		const result = await executeCLICommand({
+			command: CLI_COMMANDS.APPLY,
+			args: [id],
+			workingDir,
+			cliPath,
+			forceColor: true,
+		});
+
+		if (result.code !== 0) {
+			console.error("CLI apply command failed:", result.stderr);
+			const errorResponse = createCLIErrorResponse(
+				"Failed to apply environment",
+				result,
+				`${cliPath} ${CLI_COMMANDS.APPLY}`,
+				workingDir,
+			);
+			return c.json(errorResponse, 500);
+		}
+
+		return c.json(
+			{
+				environmentId: id,
+				output: result.stdout,
+				success: true,
+				timestamp: new Date().toISOString(),
+			},
+			200,
+		);
+	} catch (error) {
+		console.error("CLI apply command failed:", error);
+		const errorResponse = createCLIErrorResponse(
+			"Failed to apply environment",
+			null,
+			`${cliPath} ${CLI_COMMANDS.APPLY}`,
+			workingDir,
+			error instanceof Error ? error : undefined,
+		);
+		return c.json(errorResponse, 500);
+	}
+});
+
+// Mount the environment merge route
+environments.openapi(environmentMergeRoute, async (c) => {
+	const { id } = c.req.valid("param");
+	const { folder, cli } = c.req.valid("query");
+
+	// Get the folder parameter from query string, default to home folder
+	const workingDir = folder || os.homedir();
+	// Get the CLI command path from query string, default to constant
+	const cliPath = cli || DEFAULT_CLI_PATH;
+
+	try {
+		const result = await executeCLICommand({
+			command: CLI_COMMANDS.MERGE,
+			args: [id],
+			workingDir,
+			cliPath,
+			forceColor: true,
+		});
+
+		if (result.code !== 0) {
+			console.error("CLI merge command failed:", result.stderr);
+			const errorResponse = createCLIErrorResponse(
+				"Failed to merge environment",
+				result,
+				`${cliPath} ${CLI_COMMANDS.MERGE}`,
+				workingDir,
+			);
+			return c.json(errorResponse, 500);
+		}
+
+		return c.json(
+			{
+				environmentId: id,
+				output: result.stdout,
+				success: true,
+				timestamp: new Date().toISOString(),
+			},
+			200,
+		);
+	} catch (error) {
+		console.error("CLI merge command failed:", error);
+		const errorResponse = createCLIErrorResponse(
+			"Failed to merge environment",
+			null,
+			`${cliPath} ${CLI_COMMANDS.MERGE}`,
+			workingDir,
+			error instanceof Error ? error : undefined,
+		);
+		return c.json(errorResponse, 500);
+	}
+});
+
+// Mount the environment checkout route
+environments.openapi(environmentCheckoutRoute, async (c) => {
+	const { id } = c.req.valid("param");
+	const { folder, cli } = c.req.valid("query");
+
+	// Get the folder parameter from query string, default to home folder
+	const workingDir = folder || os.homedir();
+	// Get the CLI command path from query string, default to constant
+	const cliPath = cli || DEFAULT_CLI_PATH;
+
+	try {
+		const result = await executeCLICommand({
+			command: CLI_COMMANDS.CHECKOUT,
+			args: [id],
+			workingDir,
+			cliPath,
+			forceColor: true,
+		});
+
+		if (result.code !== 0) {
+			console.error("CLI checkout command failed:", result.stderr);
+			const errorResponse = createCLIErrorResponse(
+				"Failed to checkout environment",
+				result,
+				`${cliPath} ${CLI_COMMANDS.CHECKOUT}`,
+				workingDir,
+			);
+			return c.json(errorResponse, 500);
+		}
+
+		return c.json(
+			{
+				environmentId: id,
+				output: result.stdout,
+				success: true,
+				timestamp: new Date().toISOString(),
+			},
+			200,
+		);
+	} catch (error) {
+		console.error("CLI checkout command failed:", error);
+		const errorResponse = createCLIErrorResponse(
+			"Failed to checkout environment",
+			null,
+			`${cliPath} ${CLI_COMMANDS.CHECKOUT}`,
 			workingDir,
 			error instanceof Error ? error : undefined,
 		);

@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, GetApiV1FilesData, GetApiV1FilesResponse, GetApiV1GitData, GetApiV1GitResponse, PostApiV1GitCheckoutData, PostApiV1GitCheckoutResponse, GetApiV1GitLogData, GetApiV1GitLogResponse, GetApiV1GitStatusData, GetApiV1GitStatusResponse } from './types.gen';
+import type { GetApiV1EnvironmentsData, GetApiV1EnvironmentsResponse, GetApiV1EnvironmentsByIdLogsData, GetApiV1EnvironmentsByIdLogsResponse, GetApiV1EnvironmentsByIdDiffData, GetApiV1EnvironmentsByIdDiffResponse, PostApiV1EnvironmentsByIdApplyData, PostApiV1EnvironmentsByIdApplyResponse, PostApiV1EnvironmentsByIdMergeData, PostApiV1EnvironmentsByIdMergeResponse, PostApiV1EnvironmentsByIdCheckoutData, PostApiV1EnvironmentsByIdCheckoutResponse, GetApiV1FilesData, GetApiV1FilesResponse, GetApiV1GitData, GetApiV1GitResponse, PostApiV1GitCheckoutData, PostApiV1GitCheckoutResponse, GetApiV1GitLogData, GetApiV1GitLogResponse, GetApiV1GitStatusData, GetApiV1GitStatusResponse } from './types.gen';
 
 export class DefaultService {
     /**
@@ -64,6 +64,81 @@ export class DefaultService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/environments/{id}/diff',
+            path: {
+                id: data.id
+            },
+            query: {
+                folder: data.folder,
+                cli: data.cli
+            },
+            errors: {
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id Environment ID
+     * @param data.folder Working folder for the CLI command
+     * @param data.cli Path to the container-use CLI
+     * @returns EnvironmentApply Environment applied successfully
+     * @throws ApiError
+     */
+    public static postApiV1EnvironmentsByIdApply(data: PostApiV1EnvironmentsByIdApplyData): CancelablePromise<PostApiV1EnvironmentsByIdApplyResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/environments/{id}/apply',
+            path: {
+                id: data.id
+            },
+            query: {
+                folder: data.folder,
+                cli: data.cli
+            },
+            errors: {
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id Environment ID
+     * @param data.folder Working folder for the CLI command
+     * @param data.cli Path to the container-use CLI
+     * @returns EnvironmentMerge Environment merged successfully
+     * @throws ApiError
+     */
+    public static postApiV1EnvironmentsByIdMerge(data: PostApiV1EnvironmentsByIdMergeData): CancelablePromise<PostApiV1EnvironmentsByIdMergeResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/environments/{id}/merge',
+            path: {
+                id: data.id
+            },
+            query: {
+                folder: data.folder,
+                cli: data.cli
+            },
+            errors: {
+                500: 'Internal server error'
+            }
+        });
+    }
+    
+    /**
+     * @param data The data for the request.
+     * @param data.id Environment ID
+     * @param data.folder Working folder for the CLI command
+     * @param data.cli Path to the container-use CLI
+     * @returns EnvironmentCheckout Environment checked out successfully
+     * @throws ApiError
+     */
+    public static postApiV1EnvironmentsByIdCheckout(data: PostApiV1EnvironmentsByIdCheckoutData): CancelablePromise<PostApiV1EnvironmentsByIdCheckoutResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/environments/{id}/checkout',
             path: {
                 id: data.id
             },

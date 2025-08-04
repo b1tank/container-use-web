@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query"
 import {
     Container,
     FileText,
+    GitBranch,
     GitCompare,
+    GitMerge,
+    GitPullRequest,
     RefreshCw,
     RotateCcw,
     Terminal,
@@ -22,6 +25,7 @@ import {
 } from "@/components/ui/tooltip"
 
 type ViewType = "terminal" | "logs" | "diff"
+export type ActionType = "apply" | "merge" | "checkout"
 
 interface ActiveViews {
     terminal: string | null
@@ -31,6 +35,10 @@ interface ActiveViews {
 
 interface EnvironmentViewerProps {
     onViewAction: (environmentId: string, viewType: ViewType) => void
+    onEnvironmentAction?: (
+        environmentId: string,
+        actionType: ActionType,
+    ) => void
     folder?: string
     cli?: string
     activeViews?: ActiveViews
@@ -43,6 +51,7 @@ interface EnvironmentViewerProps {
 
 export function EnvironmentViewer({
     onViewAction,
+    onEnvironmentAction,
     folder,
     cli,
     activeViews,
@@ -244,210 +253,355 @@ export function EnvironmentViewer({
                                     <h4 className="font-medium text-sm truncate">
                                         {env.title || "Untitled Environment"}
                                     </h4>
-                                    <Badge
-                                        variant="outline"
-                                        className={`text-xs font-mono px-2 py-0.5 transition-all ${
-                                            activeViews?.terminal === env.id ||
-                                            activeViews?.logs === env.id ||
-                                            activeViews?.diff === env.id
-                                                ? "bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md"
-                                                : ""
-                                        }`}
-                                    >
-                                        {env.id || "No ID"}
-                                    </Badge>
                                 </div>
-                                {/* Created/Updated info and Action Icons on same row */}
-                                <div className="flex items-end justify-between">
-                                    <div className="text-xs text-muted-foreground space-y-1">
-                                        <div>
-                                            Created: {env.created || "Unknown"}
-                                        </div>
-                                        <div>
-                                            Updated: {env.updated || "Unknown"}
+                                {/* Created/Updated info and Action Toolbar */}
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <Badge
+                                            variant="outline"
+                                            className={`text-xs font-mono px-2 py-0.5 transition-all ${
+                                                activeViews?.terminal ===
+                                                    env.id ||
+                                                activeViews?.logs === env.id ||
+                                                activeViews?.diff === env.id
+                                                    ? "bg-gradient-to-r from-green-100 to-teal-100 border-green-400/70 text-green-800 shadow-md"
+                                                    : ""
+                                            }`}
+                                        >
+                                            {env.id || "No ID"}
+                                        </Badge>
+                                        <div className="text-xs text-muted-foreground space-y-1">
+                                            <div>
+                                                Created:{" "}
+                                                {env.created || "Unknown"}
+                                            </div>
+                                            <div>
+                                                Updated:{" "}
+                                                {env.updated || "Unknown"}
+                                            </div>
                                         </div>
                                     </div>
-                                    {/* Action Icons */}
-                                    <div className="flex gap-1 items-center">
-                                        {/* Individual action buttons */}
-                                        <div className="flex gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className={`h-6 w-6 p-0 relative transition-all ${
-                                                    activeViews?.terminal ===
-                                                    env.id
-                                                        ? "border border-green-400/60 hover:bg-primary/10"
-                                                        : "hover:bg-primary/10"
-                                                }`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    env.id &&
-                                                        onViewAction(
-                                                            env.id,
-                                                            "terminal",
-                                                        )
-                                                }}
-                                                title="Open Terminal"
-                                            >
-                                                <Terminal
-                                                    className={`h-3 w-3 transition-colors ${activeViews?.terminal === env.id ? "text-green-600" : ""}`}
-                                                />
-                                                {activeViews?.terminal ===
-                                                    env.id && (
-                                                    <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                                                )}
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className={`h-6 w-6 p-0 relative transition-all ${
-                                                    activeViews?.logs === env.id
-                                                        ? "border border-emerald-400/60 hover:bg-primary/10"
-                                                        : "hover:bg-primary/10"
-                                                }`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    env.id &&
-                                                        onViewAction(
-                                                            env.id,
-                                                            "logs",
-                                                        )
-                                                }}
-                                                title="Open Logs"
-                                            >
-                                                <FileText
-                                                    className={`h-3 w-3 transition-colors ${activeViews?.logs === env.id ? "text-emerald-600" : ""}`}
-                                                />
-                                                {activeViews?.logs ===
-                                                    env.id && (
-                                                    <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-                                                )}
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className={`h-6 w-6 p-0 relative transition-all ${
-                                                    activeViews?.diff === env.id
-                                                        ? "border border-teal-400/60 hover:bg-primary/10"
-                                                        : "hover:bg-primary/10"
-                                                }`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    env.id &&
-                                                        onViewAction(
-                                                            env.id,
-                                                            "diff",
-                                                        )
-                                                }}
-                                                title="Open Diff"
-                                            >
-                                                <GitCompare
-                                                    className={`h-3 w-3 transition-colors ${activeViews?.diff === env.id ? "text-teal-600" : ""}`}
-                                                />
-                                                {activeViews?.diff ===
-                                                    env.id && (
-                                                    <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-teal-500 rounded-full animate-pulse" />
-                                                )}
-                                            </Button>
+
+                                    {/* Horizontal Action Stack */}
+                                    <div className="flex items-center justify-between">
+                                        {/* Environment Actions Group (Left) */}
+                                        <div className="flex items-center bg-muted/30 rounded-md p-1 gap-0.5">
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 w-6 p-0 rounded hover:bg-emerald-100 hover:text-emerald-700 transition-all"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                env.id &&
+                                                                    onEnvironmentAction?.(
+                                                                        env.id,
+                                                                        "apply",
+                                                                    )
+                                                            }}
+                                                        >
+                                                            <GitPullRequest className="h-3 w-3" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            Apply Environment
+                                                            Changes
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 w-6 p-0 rounded hover:bg-blue-100 hover:text-blue-700 transition-all"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                env.id &&
+                                                                    onEnvironmentAction?.(
+                                                                        env.id,
+                                                                        "merge",
+                                                                    )
+                                                            }}
+                                                        >
+                                                            <GitMerge className="h-3 w-3" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            Merge Environment
+                                                            Changes
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 w-6 p-0 rounded hover:bg-purple-100 hover:text-purple-700 transition-all"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                env.id &&
+                                                                    onEnvironmentAction?.(
+                                                                        env.id,
+                                                                        "checkout",
+                                                                    )
+                                                            }}
+                                                        >
+                                                            <GitBranch className="h-3 w-3" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            Checkout Environment
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                         </div>
 
-                                        {/* Separator */}
-                                        <div className="w-px h-4 bg-border mx-1" />
+                                        {/* Monitoring Actions Group (Right) */}
+                                        <div className="flex items-center gap-1">
+                                            <div className="flex items-center bg-muted/50 rounded-md p-1 gap-0.5">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className={`h-6 w-6 p-0 relative rounded transition-all ${
+                                                                    activeViews?.terminal ===
+                                                                    env.id
+                                                                        ? "bg-green-100 border border-green-400/60 text-green-700"
+                                                                        : "hover:bg-background/80"
+                                                                }`}
+                                                                onClick={(
+                                                                    e,
+                                                                ) => {
+                                                                    e.stopPropagation()
+                                                                    env.id &&
+                                                                        onViewAction(
+                                                                            env.id,
+                                                                            "terminal",
+                                                                        )
+                                                                }}
+                                                            >
+                                                                <Terminal className="h-3 w-3" />
+                                                                {activeViews?.terminal ===
+                                                                    env.id && (
+                                                                    <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                                                                )}
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>
+                                                                Toggle Terminal
+                                                                View
+                                                            </p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
 
-                                        {/* Toggle All button */}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className={`h-6 w-8 p-0 relative transition-all ${
-                                                activeViews?.terminal ===
-                                                    env.id &&
-                                                activeViews?.logs === env.id &&
-                                                activeViews?.diff === env.id
-                                                    ? "border border-teal-400/60 hover:bg-primary/10"
-                                                    : "hover:bg-primary/10"
-                                            }`}
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                if (env.id) {
-                                                    // Check if all views are active for this environment
-                                                    const allViewsActive =
-                                                        activeViews?.terminal ===
-                                                            env.id &&
-                                                        activeViews?.logs ===
-                                                            env.id &&
-                                                        activeViews?.diff ===
-                                                            env.id
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className={`h-6 w-6 p-0 relative rounded transition-all ${
+                                                                    activeViews?.logs ===
+                                                                    env.id
+                                                                        ? "bg-emerald-100 border border-emerald-400/60 text-emerald-700"
+                                                                        : "hover:bg-background/80"
+                                                                }`}
+                                                                onClick={(
+                                                                    e,
+                                                                ) => {
+                                                                    e.stopPropagation()
+                                                                    env.id &&
+                                                                        onViewAction(
+                                                                            env.id,
+                                                                            "logs",
+                                                                        )
+                                                                }}
+                                                            >
+                                                                <FileText className="h-3 w-3" />
+                                                                {activeViews?.logs ===
+                                                                    env.id && (
+                                                                    <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
+                                                                )}
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>
+                                                                Toggle Logs View
+                                                            </p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
 
-                                                    if (allViewsActive) {
-                                                        // Close all views for this environment
-                                                        onViewAction(
-                                                            env.id,
-                                                            "terminal",
-                                                        )
-                                                        onViewAction(
-                                                            env.id,
-                                                            "logs",
-                                                        )
-                                                        onViewAction(
-                                                            env.id,
-                                                            "diff",
-                                                        )
-                                                    } else {
-                                                        // Open only the views that are not currently active
-                                                        if (
-                                                            activeViews?.terminal !==
-                                                            env.id
-                                                        ) {
-                                                            onViewAction(
-                                                                env.id,
-                                                                "terminal",
-                                                            )
-                                                        }
-                                                        if (
-                                                            activeViews?.logs !==
-                                                            env.id
-                                                        ) {
-                                                            onViewAction(
-                                                                env.id,
-                                                                "logs",
-                                                            )
-                                                        }
-                                                        if (
-                                                            activeViews?.diff !==
-                                                            env.id
-                                                        ) {
-                                                            onViewAction(
-                                                                env.id,
-                                                                "diff",
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            }}
-                                            title={
-                                                activeViews?.terminal ===
-                                                    env.id &&
-                                                activeViews?.logs === env.id &&
-                                                activeViews?.diff === env.id
-                                                    ? "Close All Views"
-                                                    : "Open All Views"
-                                            }
-                                        >
-                                            {activeViews?.terminal === env.id &&
-                                            activeViews?.logs === env.id &&
-                                            activeViews?.diff === env.id ? (
-                                                <ToggleRight className="h-3 w-3 text-teal-600" />
-                                            ) : (
-                                                <ToggleLeft className="h-3 w-3" />
-                                            )}
-                                            {activeViews?.terminal === env.id &&
-                                                activeViews?.logs === env.id &&
-                                                activeViews?.diff ===
-                                                    env.id && (
-                                                    <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-gradient-to-r from-green-500 to-teal-500 rounded-full animate-pulse" />
-                                                )}
-                                        </Button>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className={`h-6 w-6 p-0 relative rounded transition-all ${
+                                                                    activeViews?.diff ===
+                                                                    env.id
+                                                                        ? "bg-teal-100 border border-teal-400/60 text-teal-700"
+                                                                        : "hover:bg-background/80"
+                                                                }`}
+                                                                onClick={(
+                                                                    e,
+                                                                ) => {
+                                                                    e.stopPropagation()
+                                                                    env.id &&
+                                                                        onViewAction(
+                                                                            env.id,
+                                                                            "diff",
+                                                                        )
+                                                                }}
+                                                            >
+                                                                <GitCompare className="h-3 w-3" />
+                                                                {activeViews?.diff ===
+                                                                    env.id && (
+                                                                    <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-teal-500 rounded-full animate-pulse" />
+                                                                )}
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>
+                                                                Toggle Diff View
+                                                            </p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </div>
+
+                                            {/* Toggle All Views */}
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className={`h-6 w-7 p-0 relative rounded transition-all ${
+                                                                activeViews?.terminal ===
+                                                                    env.id &&
+                                                                activeViews?.logs ===
+                                                                    env.id &&
+                                                                activeViews?.diff ===
+                                                                    env.id
+                                                                    ? "bg-gradient-to-r from-green-100 to-teal-100 border border-teal-400/60 text-teal-700"
+                                                                    : "hover:bg-muted"
+                                                            }`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                if (env.id) {
+                                                                    // Check if all views are active for this environment
+                                                                    const allViewsActive =
+                                                                        activeViews?.terminal ===
+                                                                            env.id &&
+                                                                        activeViews?.logs ===
+                                                                            env.id &&
+                                                                        activeViews?.diff ===
+                                                                            env.id
+
+                                                                    if (
+                                                                        allViewsActive
+                                                                    ) {
+                                                                        // Close all views for this environment
+                                                                        onViewAction(
+                                                                            env.id,
+                                                                            "terminal",
+                                                                        )
+                                                                        onViewAction(
+                                                                            env.id,
+                                                                            "logs",
+                                                                        )
+                                                                        onViewAction(
+                                                                            env.id,
+                                                                            "diff",
+                                                                        )
+                                                                    } else {
+                                                                        // Open only the views that are not currently active
+                                                                        if (
+                                                                            activeViews?.terminal !==
+                                                                            env.id
+                                                                        ) {
+                                                                            onViewAction(
+                                                                                env.id,
+                                                                                "terminal",
+                                                                            )
+                                                                        }
+                                                                        if (
+                                                                            activeViews?.logs !==
+                                                                            env.id
+                                                                        ) {
+                                                                            onViewAction(
+                                                                                env.id,
+                                                                                "logs",
+                                                                            )
+                                                                        }
+                                                                        if (
+                                                                            activeViews?.diff !==
+                                                                            env.id
+                                                                        ) {
+                                                                            onViewAction(
+                                                                                env.id,
+                                                                                "diff",
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }}
+                                                        >
+                                                            {activeViews?.terminal ===
+                                                                env.id &&
+                                                            activeViews?.logs ===
+                                                                env.id &&
+                                                            activeViews?.diff ===
+                                                                env.id ? (
+                                                                <ToggleRight className="h-3 w-3" />
+                                                            ) : (
+                                                                <ToggleLeft className="h-3 w-3" />
+                                                            )}
+                                                            {activeViews?.terminal ===
+                                                                env.id &&
+                                                                activeViews?.logs ===
+                                                                    env.id &&
+                                                                activeViews?.diff ===
+                                                                    env.id && (
+                                                                    <div className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-gradient-to-r from-green-500 to-teal-500 rounded-full animate-pulse" />
+                                                                )}
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>
+                                                            {activeViews?.terminal ===
+                                                                env.id &&
+                                                            activeViews?.logs ===
+                                                                env.id &&
+                                                            activeViews?.diff ===
+                                                                env.id
+                                                                ? "Close All Monitoring Views"
+                                                                : "Open All Monitoring Views"}
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -64,6 +64,59 @@ export const EnvironmentDiffSchema = z
 	})
 	.openapi("EnvironmentDiff");
 
+export const EnvironmentApplySchema = z
+	.object({
+		environmentId: z.string().openapi({
+			example: "sharing-loon",
+		}),
+		output: z.string().openapi({
+			example:
+				"Updating 09f15fc..8a9d3a6\nFast-forward\nSquash commit -- not updating HEAD\n README.md        | 27 +++++++++++++++++++++++++++\n app.py           | 18 ++++++++++++++++++\n requirements.txt |  2 ++\n 3 files changed, 47 insertions(+)\n create mode 100644 app.py\n create mode 100644 requirements.txt\nEnvironment 'sharing-loon' applied successfully.",
+		}),
+		success: z.boolean().openapi({
+			example: true,
+		}),
+		timestamp: z.string().openapi({
+			example: "2025-07-31T10:30:00Z",
+		}),
+	})
+	.openapi("EnvironmentApply");
+
+export const EnvironmentMergeSchema = z
+	.object({
+		environmentId: z.string().openapi({
+			example: "sharing-loon",
+		}),
+		output: z.string().openapi({
+			example:
+				"Merge made by the 'ort' strategy.\n README.md        | 27 +++++++++++++++++++++++++++\n app.py           | 18 ++++++++++++++++++\n requirements.txt |  2 ++\n 3 files changed, 47 insertions(+)\n create mode 100644 app.py\n create mode 100644 requirements.txt\nEnvironment 'sharing-loon' merged successfully.",
+		}),
+		success: z.boolean().openapi({
+			example: true,
+		}),
+		timestamp: z.string().openapi({
+			example: "2025-07-31T10:30:00Z",
+		}),
+	})
+	.openapi("EnvironmentMerge");
+
+export const EnvironmentCheckoutSchema = z
+	.object({
+		environmentId: z.string().openapi({
+			example: "sharing-loon",
+		}),
+		output: z.string().openapi({
+			example: "Switched to branch 'cu-sharing-loon'",
+		}),
+		success: z.boolean().openapi({
+			example: true,
+		}),
+		timestamp: z.string().openapi({
+			example: "2025-07-31T10:30:00Z",
+		}),
+	})
+	.openapi("EnvironmentCheckout");
+
 export const ErrorSchema = z
 	.object({
 		error: z.string().openapi({
@@ -83,3 +136,6 @@ export const ErrorSchema = z
 export type Environment = z.infer<typeof EnvironmentSchema>;
 export type EnvironmentLogs = z.infer<typeof EnvironmentLogsSchema>;
 export type EnvironmentDiff = z.infer<typeof EnvironmentDiffSchema>;
+export type EnvironmentApply = z.infer<typeof EnvironmentApplySchema>;
+export type EnvironmentMerge = z.infer<typeof EnvironmentMergeSchema>;
+export type EnvironmentCheckout = z.infer<typeof EnvironmentCheckoutSchema>;

@@ -7,6 +7,20 @@ export type Environment = {
     updated: string;
 };
 
+export type EnvironmentApply = {
+    environmentId: string;
+    output: string;
+    success: boolean;
+    timestamp: string;
+};
+
+export type EnvironmentCheckout = {
+    environmentId: string;
+    output: string;
+    success: boolean;
+    timestamp: string;
+};
+
 export type EnvironmentDiff = {
     environmentId: string;
     diff: string;
@@ -18,6 +32,13 @@ export type EnvironmentList = Array<Environment>;
 export type EnvironmentLogs = {
     environmentId: string;
     logs: string;
+    timestamp: string;
+};
+
+export type EnvironmentMerge = {
+    environmentId: string;
+    output: string;
+    success: boolean;
     timestamp: string;
 };
 
@@ -77,6 +98,57 @@ export type GetApiV1EnvironmentsByIdDiffData = {
 };
 
 export type GetApiV1EnvironmentsByIdDiffResponse = (EnvironmentDiff);
+
+export type PostApiV1EnvironmentsByIdApplyData = {
+    /**
+     * Path to the container-use CLI
+     */
+    cli?: string;
+    /**
+     * Working folder for the CLI command
+     */
+    folder?: string;
+    /**
+     * Environment ID
+     */
+    id: string;
+};
+
+export type PostApiV1EnvironmentsByIdApplyResponse = (EnvironmentApply);
+
+export type PostApiV1EnvironmentsByIdMergeData = {
+    /**
+     * Path to the container-use CLI
+     */
+    cli?: string;
+    /**
+     * Working folder for the CLI command
+     */
+    folder?: string;
+    /**
+     * Environment ID
+     */
+    id: string;
+};
+
+export type PostApiV1EnvironmentsByIdMergeResponse = (EnvironmentMerge);
+
+export type PostApiV1EnvironmentsByIdCheckoutData = {
+    /**
+     * Path to the container-use CLI
+     */
+    cli?: string;
+    /**
+     * Working folder for the CLI command
+     */
+    folder?: string;
+    /**
+     * Environment ID
+     */
+    id: string;
+};
+
+export type PostApiV1EnvironmentsByIdCheckoutResponse = (EnvironmentCheckout);
 
 export type GetApiV1FilesData = {
     /**
