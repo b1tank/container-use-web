@@ -1,0 +1,49 @@
+# Development files
+.git/
+.github/
+.gitignore
+.gitattributes
+.vscode/
+.env*
+*.log
+.pre-commit-config.yaml
+.ruff_cache/
+
+# Dependencies
+node_modules/
+
+# Source files (we only ship built files)
+backend/src/
+frontend/src/
+frontend/public/
+cli/src/
+
+# Configuration files
+backend/tsconfig.json
+frontend/tsconfig*.json
+frontend/vite.config.ts
+frontend/biome.json
+frontend/components.json
+frontend/openapi-ts.config.ts
+tsconfig.cli.json
+
+# Lock files and package files of subprojects
+backend/package.json
+backend/pnpm-lock.yaml
+frontend/package.json
+frontend/pnpm-lock.yaml
+backend/pnpm-workspace.yaml
+frontend/pnpm-workspace.yaml
+
+# Build artifacts that shouldn't be in the package
+frontend/node_modules/
+backend/node_modules/
+backend/uv.lock
+backend/pyproject.toml
+
+# Test files
+**/*.test.*
+**/*.spec.*
+
+# Documentation and development files
+docs/

@@ -192,6 +192,15 @@ apiApp.get("/ui", swaggerUI({ url: "/api/v1/doc" }));
 // Mount the API app under /api/v1
 app.route("/api/v1", apiApp);
 
+// Serve frontend static files (production build) - this should be LAST
+app.use(
+	"/*",
+	serveStatic({
+		root: "./frontend/dist",
+		index: "index.html",
+	}),
+);
+
 // Read PORT from environment variable, default to 8000
 const port = parseInt(process.env.PORT || "8000");
 

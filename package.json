@@ -1,0 +1,47 @@
+{
+    "name": "container-use-ui",
+    "version": "1.0.0",
+    "description": "A CLI tool for container development with integrated UI dashboard",
+    "type": "module",
+    "bin": {
+        "container-use-ui": "./bin/cli.js",
+        "cui": "./bin/cli.js"
+    },
+    "scripts": {
+        "build": "./scripts/build.sh",
+        "build:frontend": "cd frontend && pnpm run build",
+        "build:backend": "cd backend && pnpm run build",
+        "dev": "concurrently \"cd backend && pnpm run dev\" \"cd frontend && pnpm run dev\"",
+        "test:cli": "./scripts/test-cli.sh",
+        "prepack": "./scripts/build.sh"
+    },
+    "keywords": [
+        "cli",
+        "container",
+        "docker",
+        "development",
+        "ui",
+        "dashboard"
+    ],
+    "author": "b1tank",
+    "license": "MIT",
+    "files": [
+        "bin/",
+        "backend/dist/",
+        "frontend/dist/",
+        "scripts/"
+    ],
+    "dependencies": {
+        "commander": "^14.0.0",
+        "open": "^10.1.0"
+    },
+    "devDependencies": {
+        "concurrently": "^9.1.0",
+        "@types/node": "^20.11.17",
+        "typescript": "^5.8.3"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "preferGlobal": true
+}

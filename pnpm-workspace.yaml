@@ -1,0 +1,9 @@
+packages:
+  - backend
+  - frontend
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - '@tailwindcss/oxide'
+  - esbuild
+  - node-pty
