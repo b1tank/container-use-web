@@ -10,7 +10,7 @@ export class DefaultService {
      * @param data The data for the request.
      * @param data.folder Working folder for the CLI command
      * @param data.cli Path to the container-use CLI
-     * @returns EnvironmentList List of environments
+     * @returns EnvironmentListResponse List of environments with git repository information
      * @throws ApiError
      */
     public static getApiV1Environments(data: GetApiV1EnvironmentsData = {}): CancelablePromise<GetApiV1EnvironmentsResponse> {

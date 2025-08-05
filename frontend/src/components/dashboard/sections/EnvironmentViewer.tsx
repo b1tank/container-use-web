@@ -87,7 +87,7 @@ export function EnvironmentViewer({
     )
 
     const {
-        data: environments,
+        data: environmentsResponse,
         isLoading,
         error,
         refetch,
@@ -102,6 +102,10 @@ export function EnvironmentViewer({
         refetchInterval: autoRefresh ? 30000 : false, // Refresh every 30 seconds when auto-refresh is enabled
         refetchOnWindowFocus: false,
     })
+
+    // Extract environments and git info from the response
+    const environments = environmentsResponse?.environments
+    const gitInfo = environmentsResponse?.gitInfo
 
     const handleManualRefresh = () => {
         refetch()
@@ -122,10 +126,10 @@ export function EnvironmentViewer({
 
     // Update last updated timestamp when environments data changes
     useEffect(() => {
-        if (environments && !isLoading) {
+        if (environmentsResponse && !isLoading) {
             setLastUpdated(new Date())
         }
-    }, [environments, isLoading])
+    }, [environmentsResponse, isLoading])
 
     if (isLoading) {
         return (
@@ -141,20 +145,19 @@ export function EnvironmentViewer({
         return (
             <div className="flex items-center justify-center h-full p-4">
                 <div className="text-center space-y-4 max-w-sm">
-                    <div className="text-2xl">🌎</div>
+                    <div className="text-2xl">❌</div>
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium">
-                            No Environments Found
+                            Failed to Load Environments
                         </h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                            Please select a folder that contains a git
-                            repository to view and manage your container
-                            environments.
+                            An error occurred while fetching environments.
+                            Please check your configuration and try again.
                         </p>
                         {(folder || cli) && (
                             <div className="text-xs bg-muted/50 p-2 rounded border space-y-1">
                                 <div className="font-medium">
-                                    Current Folder:
+                                    Current Configuration:
                                 </div>
                                 {folder && <div>📂 {folder}</div>}
                                 {cli && <div>🛠️ CLI: {cli}</div>}
@@ -166,7 +169,40 @@ export function EnvironmentViewer({
         )
     }
 
+    // Determine if we're in a git repository
+    const isGitRepository = gitInfo?.isRepository
+    const hasGitInfo = !!gitInfo
+
     if (!environments?.length) {
+        // If we're not in a git repository, show git repo requirement message
+        if (hasGitInfo && !isGitRepository) {
+            return (
+                <div className="flex items-center justify-center h-full p-4">
+                    <div className="text-center space-y-4 max-w-sm">
+                        <div className="text-2xl">🌳</div>
+                        <div className="space-y-2">
+                            <h3 className="text-sm font-medium">
+                                Not a Git Repository
+                            </h3>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                The selected folder is not a git repository or
+                                git is not initialized.
+                            </p>
+                            {folder && (
+                                <div className="text-xs bg-muted/50 p-2 rounded border space-y-1">
+                                    <div className="font-medium">
+                                        Current Folder:
+                                    </div>
+                                    <div>📂 {folder}</div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+
+        // If we are in a git repository but no environments exist
         return (
             <div className="flex items-center justify-center h-full p-4">
                 <div className="text-center space-y-4 max-w-sm">
@@ -176,10 +212,20 @@ export function EnvironmentViewer({
                             Ready to Get Started
                         </h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                            No environments found in this repository yet. Create
-                            your first environment to begin containerized
-                            development.
+                            No environments found in this git repository yet.
+                            Create your first environment to begin.
                         </p>
+                        {isGitRepository && gitInfo && (
+                            <div className="text-xs bg-emerald-50 border border-emerald-200 p-2 rounded space-y-1">
+                                <div className="font-medium text-emerald-800">
+                                    ✅ Git Repository Detected
+                                </div>
+                                <div className="text-emerald-700">
+                                    Current branch:{" "}
+                                    {gitInfo.currentBranch || "unknown"}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

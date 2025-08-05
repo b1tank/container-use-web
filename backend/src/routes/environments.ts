@@ -4,7 +4,7 @@ import {
 	EnvironmentApplySchema,
 	EnvironmentCheckoutSchema,
 	EnvironmentDiffSchema,
-	EnvironmentListSchema,
+	EnvironmentListResponseSchema,
 	EnvironmentLogsSchema,
 	EnvironmentMergeSchema,
 	ErrorSchema,
@@ -12,9 +12,48 @@ import {
 import {
 	createCLIErrorResponse,
 	executeCLICommand,
+	executeGenericCommand,
 } from "../utils/cli-executor.js";
 import { CLI_COMMANDS, DEFAULT_CLI_PATH } from "../utils/constants.js";
 import { parseEnvironmentList } from "../utils/parser.js";
+
+// Helper function to get git repository information
+async function getGitInfo(workingDir: string) {
+	try {
+		// Check if we're in a git repository
+		const gitRevParseResult = await executeGenericCommand({
+			command: "git",
+			args: ["rev-parse", "--is-inside-work-tree"],
+			workingDir,
+		});
+
+		if (gitRevParseResult.code !== 0) {
+			return {
+				isRepository: false,
+				currentBranch: undefined,
+			};
+		}
+
+		// Get current branch
+		const branchResult = await executeGenericCommand({
+			command: "git",
+			args: ["branch", "--show-current"],
+			workingDir,
+		});
+
+		return {
+			isRepository: true,
+			currentBranch:
+				branchResult.code === 0 ? branchResult.stdout.trim() : undefined,
+		};
+	} catch (error) {
+		console.warn("Failed to get git info:", error);
+		return {
+			isRepository: false,
+			currentBranch: undefined,
+		};
+	}
+}
 
 // Route to list all environments
 export const environmentListRoute = createRoute({
@@ -50,10 +89,10 @@ export const environmentListRoute = createRoute({
 		200: {
 			content: {
 				"application/json": {
-					schema: EnvironmentListSchema,
+					schema: EnvironmentListResponseSchema,
 				},
 			},
-			description: "List of environments",
+			description: "List of environments with git repository information",
 		},
 		500: {
 			content: {
@@ -378,6 +417,9 @@ environments.openapi(environmentListRoute, async (c) => {
 	const cliPath = cli || DEFAULT_CLI_PATH;
 
 	try {
+		// Get git repository information
+		const gitInfo = await getGitInfo(workingDir);
+
 		const result = await executeCLICommand({
 			command: CLI_COMMANDS.LIST,
 			workingDir,
@@ -389,7 +431,13 @@ environments.openapi(environmentListRoute, async (c) => {
 				console.warn(
 					"Git repository not found - returning empty environment list",
 				);
-				return c.json([], 200);
+				return c.json(
+					{
+						environments: [],
+						gitInfo,
+					},
+					200,
+				);
 			}
 			console.error("CLI command failed:", result.stderr);
 			const errorResponse = createCLIErrorResponse(
@@ -402,7 +450,13 @@ environments.openapi(environmentListRoute, async (c) => {
 		}
 
 		const environmentList = parseEnvironmentList(result.stdout);
-		return c.json(environmentList, 200);
+		return c.json(
+			{
+				environments: environmentList,
+				gitInfo,
+			},
+			200,
+		);
 	} catch (error) {
 		console.error("CLI command failed:", error);
 		const errorResponse = createCLIErrorResponse(

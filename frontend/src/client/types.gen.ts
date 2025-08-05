@@ -27,7 +27,22 @@ export type EnvironmentDiff = {
     timestamp: string;
 };
 
-export type EnvironmentList = Array<Environment>;
+export type EnvironmentListResponse = {
+    environments: Array<Environment>;
+    /**
+     * Git repository information for the current folder
+     */
+    gitInfo: {
+        /**
+         * Whether the folder is a git repository
+         */
+        isRepository: boolean;
+        /**
+         * Current branch name if in a git repository
+         */
+        currentBranch?: string;
+    };
+};
 
 export type EnvironmentLogs = {
     environmentId: string;
@@ -63,7 +78,7 @@ export type GetApiV1EnvironmentsData = {
     folder?: string;
 };
 
-export type GetApiV1EnvironmentsResponse = (EnvironmentList);
+export type GetApiV1EnvironmentsResponse = (EnvironmentListResponse);
 
 export type GetApiV1EnvironmentsByIdLogsData = {
     /**

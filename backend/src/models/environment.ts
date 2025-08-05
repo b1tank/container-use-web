@@ -30,6 +30,26 @@ export const EnvironmentSchema = z
 	})
 	.openapi("Environment");
 
+export const EnvironmentListResponseSchema = z
+	.object({
+		environments: z.array(EnvironmentSchema),
+		gitInfo: z
+			.object({
+				isRepository: z.boolean().openapi({
+					example: true,
+					description: "Whether the folder is a git repository",
+				}),
+				currentBranch: z.string().optional().openapi({
+					example: "main",
+					description: "Current branch name if in a git repository",
+				}),
+			})
+			.openapi({
+				description: "Git repository information for the current folder",
+			}),
+	})
+	.openapi("EnvironmentListResponse");
+
 export const EnvironmentListSchema = z
 	.array(EnvironmentSchema)
 	.openapi("EnvironmentList");
@@ -154,6 +174,9 @@ export const ErrorSchema = z
 	.openapi("Error");
 
 export type Environment = z.infer<typeof EnvironmentSchema>;
+export type EnvironmentListResponse = z.infer<
+	typeof EnvironmentListResponseSchema
+>;
 export type EnvironmentLogs = z.infer<typeof EnvironmentLogsSchema>;
 export type EnvironmentDiff = z.infer<typeof EnvironmentDiffSchema>;
 export type EnvironmentApply = z.infer<typeof EnvironmentApplySchema>;
