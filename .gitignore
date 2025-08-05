@@ -6,5 +6,7 @@ node_modules/
 
 .github/prompts
 
-dist
-bin
+dist/
+bin/
+
+*.tgz

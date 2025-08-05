@@ -1,7 +1,7 @@
 {
     "name": "container-use-ui",
-    "version": "1.0.0",
-    "description": "A CLI tool for container development with integrated UI dashboard",
+    "version": "0.1.0",
+    "description": "A CLI tool for monitoring container-use with a web UI",
     "type": "module",
     "bin": {
         "container-use-ui": "./bin/cli.js",
@@ -12,7 +12,9 @@
         "build:frontend": "cd frontend && pnpm run build",
         "build:backend": "cd backend && pnpm run build",
         "dev": "concurrently \"cd backend && pnpm run dev\" \"cd frontend && pnpm run dev\"",
+        "test": "pnpm run test:cli",
         "test:cli": "./scripts/test-cli.sh",
+        "postinstall": "echo 'Container Use UI installed successfully!'",
         "prepack": "./scripts/build.sh"
     },
     "keywords": [
@@ -23,13 +25,22 @@
         "ui",
         "dashboard"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/b1tank/container-use-ui.git"
+    },
+    "bugs": {
+        "url": "https://github.com/b1tank/container-use-ui/issues"
+    },
+    "homepage": "https://github.com/b1tank/container-use-ui#readme",
     "author": "b1tank",
     "license": "MIT",
     "files": [
         "bin/",
         "backend/dist/",
         "frontend/dist/",
-        "scripts/"
+        "README.md",
+        "LICENSE"
     ],
     "dependencies": {
         "commander": "^14.0.0",
