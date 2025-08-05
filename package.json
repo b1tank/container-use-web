@@ -7,6 +7,10 @@
         "container-use-ui": "./bin/cli.js",
         "cui": "./bin/cli.js"
     },
+    "workspaces": [
+        "frontend",
+        "backend"
+    ],
     "scripts": {
         "build": "./scripts/build.sh",
         "build:frontend": "cd frontend && pnpm run build",

@@ -1,5 +1,7 @@
 {
   "name": "backend",
+  "version": "0.1.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "../scripts/free_port.sh 8000 && tsx watch src/index.ts",

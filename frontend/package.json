@@ -1,7 +1,7 @@
 {
-  "name": "viteproj",
+  "name": "frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "../scripts/free_port.sh 5173 && vite --host",
