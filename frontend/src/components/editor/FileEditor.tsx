@@ -1,7 +1,20 @@
-import { Editor } from "@monaco-editor/react"
 import { ExternalLink, FileIcon, RefreshCw } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
+
+// Lazy load Monaco Editor
+const Editor = lazy(() =>
+    import("@monaco-editor/react").then((module) => ({
+        default: module.Editor,
+    })),
+)
+
+// Loading component for Monaco Editor
+const EditorLoader = () => (
+    <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>
+)
 
 interface FileEditorProps {
     filePath?: string
@@ -279,31 +292,34 @@ export function FileEditor({ filePath, onOpenInVSCode }: FileEditorProps) {
 
             {/* Editor Content */}
             <div className="flex-1 min-h-0">
-                <Editor
-                    height="100%"
-                    language={language}
-                    value={content}
-                    theme="light"
-                    options={{
-                        readOnly: true,
-                        minimap: { enabled: false },
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                        wordWrap: "on",
-                        lineNumbers: "on",
-                        glyphMargin: false,
-                        folding: true,
-                        lineDecorationsWidth: 10,
-                        lineNumbersMinChars: 3,
-                        renderLineHighlight: "line",
-                        selectOnLineNumbers: true,
-                        roundedSelection: false,
-                        cursorStyle: "line",
-                        cursorWidth: 2,
-                        fontSize: 14,
-                        fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-                    }}
-                />
+                <Suspense fallback={<EditorLoader />}>
+                    <Editor
+                        height="100%"
+                        language={language}
+                        value={content}
+                        theme="light"
+                        options={{
+                            readOnly: true,
+                            minimap: { enabled: false },
+                            scrollBeyondLastLine: false,
+                            automaticLayout: true,
+                            wordWrap: "on",
+                            lineNumbers: "on",
+                            glyphMargin: false,
+                            folding: true,
+                            lineDecorationsWidth: 10,
+                            lineNumbersMinChars: 3,
+                            renderLineHighlight: "line",
+                            selectOnLineNumbers: true,
+                            roundedSelection: false,
+                            cursorStyle: "line",
+                            cursorWidth: 2,
+                            fontSize: 14,
+                            fontFamily:
+                                'Monaco, Menlo, "Ubuntu Mono", monospace',
+                        }}
+                    />
+                </Suspense>
             </div>
         </div>
     )

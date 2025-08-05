@@ -1,6 +1,13 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router"
-import React from "react"
+import React, { Suspense } from "react"
 import { ThemeProvider } from "@/components/ui/theme-provider"
+
+// Loading fallback component
+const LoadingFallback = () => (
+    <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>
+)
 
 const loadDevtools = () =>
     Promise.all([import("@tanstack/react-router-devtools")]).then(
@@ -47,7 +54,9 @@ if (import.meta.env.DEV) {
 export const Route = createRootRoute({
     component: () => (
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-            <Outlet />
+            <Suspense fallback={<LoadingFallback />}>
+                <Outlet />
+            </Suspense>
             <TanStackDevtools />
         </ThemeProvider>
     ),

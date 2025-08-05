@@ -20,4 +20,47 @@ export default defineConfig({
 		allowedHosts: ["localhost"],
 	},
 	envDir: resolve(__dirname, "../"),
+	build: {
+		chunkSizeWarningLimit: 600,
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					// React core
+					react: ["react", "react-dom"],
+
+					// TanStack ecosystem
+					tanstack: [
+						"@tanstack/react-query",
+						"@tanstack/react-router",
+						"@tanstack/react-router-devtools",
+					],
+
+					// UI and styling libraries
+					ui: [
+						"@radix-ui/react-context-menu",
+						"@radix-ui/react-dropdown-menu",
+						"@radix-ui/react-separator",
+						"@radix-ui/react-slot",
+						"@radix-ui/react-tabs",
+						"@radix-ui/react-toggle",
+						"@radix-ui/react-toggle-group",
+						"@radix-ui/react-tooltip",
+						"class-variance-authority",
+						"clsx",
+						"tailwind-merge",
+						"lucide-react",
+					],
+
+					// Code editor
+					monaco: ["monaco-editor", "@monaco-editor/react"],
+
+					// Terminal
+					terminal: ["@xterm/xterm", "@xterm/addon-fit"],
+
+					// Utilities
+					utils: ["axios", "socket.io-client", "zod", "react-resizable-panels"],
+				},
+			},
+		},
+	},
 });

@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { lazy } from "react"
 import { z } from "zod"
-import { ContainerUseDashboard } from "@/components/dashboard/ContainerUseDashboard"
+
+// Lazy load the dashboard component
+const ContainerUseDashboard = lazy(() =>
+    import("@/components/dashboard/ContainerUseDashboard").then((module) => ({
+        default: module.ContainerUseDashboard,
+    })),
+)
 
 const searchSchema = z.object({
     folder: z.string().optional(),

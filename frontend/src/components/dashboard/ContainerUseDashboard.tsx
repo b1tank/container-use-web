@@ -10,7 +10,7 @@ import {
     Server,
     Terminal,
 } from "lucide-react"
-import { useCallback, useState } from "react"
+import { lazy, Suspense, useCallback, useState } from "react"
 import { DefaultService } from "@/client"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,14 +21,53 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
 import { Separator } from "@/components/ui/separator"
-import { DiffViewer } from "./sections/DiffViewer"
+
+// Lazy load heavy components
+const DiffViewer = lazy(() =>
+    import("./sections/DiffViewer").then((module) => ({
+        default: module.DiffViewer,
+    })),
+)
+const EnvironmentViewer = lazy(() =>
+    import("./sections/EnvironmentViewer").then((module) => ({
+        default: module.EnvironmentViewer,
+    })),
+)
+const GitViewer = lazy(() =>
+    import("./sections/GitViewer").then((module) => ({
+        default: module.GitViewer,
+    })),
+)
+const LogViewer = lazy(() =>
+    import("./sections/LogViewer").then((module) => ({
+        default: module.LogViewer,
+    })),
+)
+const TerminalViewer = lazy(() =>
+    import("./sections/TerminalViewer").then((module) => ({
+        default: module.TerminalViewer,
+    })),
+)
+const WatchViewer = lazy(() =>
+    import("./sections/WatchViewer").then((module) => ({
+        default: module.WatchViewer,
+    })),
+)
+const WorkspaceViewer = lazy(() =>
+    import("./sections/WorkspaceViewer").then((module) => ({
+        default: module.WorkspaceViewer,
+    })),
+)
+
+// Import types separately
 import type { ActionType } from "./sections/EnvironmentViewer"
-import { EnvironmentViewer } from "./sections/EnvironmentViewer"
-import { GitViewer } from "./sections/GitViewer"
-import { LogViewer } from "./sections/LogViewer"
-import { TerminalViewer } from "./sections/TerminalViewer"
-import { WatchViewer } from "./sections/WatchViewer"
-import { WorkspaceViewer } from "./sections/WorkspaceViewer"
+
+// Loading component for sections
+const SectionLoader = () => (
+    <div className="flex items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+    </div>
+)
 
 interface ContainerUseDashboardProps {
     folder?: string
@@ -224,15 +263,17 @@ export function ContainerUseDashboard({
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-2rem)] overflow-hidden">
-                                        <WorkspaceViewer
-                                            initialFolder={folder}
-                                            onFolderChange={
-                                                handleWorkspaceFolderChange
-                                            }
-                                            onShowEnvironments={
-                                                handleShowEnvironments
-                                            }
-                                        />
+                                        <Suspense fallback={<SectionLoader />}>
+                                            <WorkspaceViewer
+                                                initialFolder={folder}
+                                                onFolderChange={
+                                                    handleWorkspaceFolderChange
+                                                }
+                                                onShowEnvironments={
+                                                    handleShowEnvironments
+                                                }
+                                            />
+                                        </Suspense>
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>
@@ -327,11 +368,15 @@ export function ContainerUseDashboard({
                                                 </div>
                                             </div>
                                         ) : (
-                                            <WatchViewer
-                                                folder={folder}
-                                                cli={cli}
-                                                connected={watchConnected}
-                                            />
+                                            <Suspense
+                                                fallback={<SectionLoader />}
+                                            >
+                                                <WatchViewer
+                                                    folder={folder}
+                                                    cli={cli}
+                                                    connected={watchConnected}
+                                                />
+                                            </Suspense>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -408,13 +453,17 @@ export function ContainerUseDashboard({
                                                 </div>
                                             </div>
                                         ) : (
-                                            <TerminalViewer
-                                                environmentId={
-                                                    activeViews.terminal
-                                                }
-                                                folder={folder}
-                                                cli={cli}
-                                            />
+                                            <Suspense
+                                                fallback={<SectionLoader />}
+                                            >
+                                                <TerminalViewer
+                                                    environmentId={
+                                                        activeViews.terminal
+                                                    }
+                                                    folder={folder}
+                                                    cli={cli}
+                                                />
+                                            </Suspense>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -441,18 +490,20 @@ export function ContainerUseDashboard({
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
-                                        <EnvironmentViewer
-                                            onViewAction={handleViewAction}
-                                            onEnvironmentAction={
-                                                handleEnvironmentAction
-                                            }
-                                            folder={folder}
-                                            cli={cli}
-                                            activeViews={activeViews}
-                                            onEnvironmentStatusChange={
-                                                handleEnvironmentStatusChange
-                                            }
-                                        />
+                                        <Suspense fallback={<SectionLoader />}>
+                                            <EnvironmentViewer
+                                                onViewAction={handleViewAction}
+                                                onEnvironmentAction={
+                                                    handleEnvironmentAction
+                                                }
+                                                folder={folder}
+                                                cli={cli}
+                                                activeViews={activeViews}
+                                                onEnvironmentStatusChange={
+                                                    handleEnvironmentStatusChange
+                                                }
+                                            />
+                                        </Suspense>
                                     </CardContent>
                                 </Card>
                             </ResizablePanel>
@@ -471,7 +522,11 @@ export function ContainerUseDashboard({
                                     <Separator />
                                     <CardContent className="p-0 h-[calc(100%-4rem)] overflow-hidden">
                                         {folder ? (
-                                            <GitViewer folder={folder} />
+                                            <Suspense
+                                                fallback={<SectionLoader />}
+                                            >
+                                                <GitViewer folder={folder} />
+                                            </Suspense>
                                         ) : (
                                             <div className="flex items-center justify-center h-full bg-muted/10">
                                                 <div className="text-center space-y-2">
@@ -544,11 +599,17 @@ export function ContainerUseDashboard({
                                                 </div>
                                             </div>
                                         ) : (
-                                            <LogViewer
-                                                environmentId={activeViews.logs}
-                                                folder={folder}
-                                                cli={cli}
-                                            />
+                                            <Suspense
+                                                fallback={<SectionLoader />}
+                                            >
+                                                <LogViewer
+                                                    environmentId={
+                                                        activeViews.logs
+                                                    }
+                                                    folder={folder}
+                                                    cli={cli}
+                                                />
+                                            </Suspense>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -605,11 +666,17 @@ export function ContainerUseDashboard({
                                                 </div>
                                             </div>
                                         ) : (
-                                            <DiffViewer
-                                                environmentId={activeViews.diff}
-                                                folder={folder}
-                                                cli={cli}
-                                            />
+                                            <Suspense
+                                                fallback={<SectionLoader />}
+                                            >
+                                                <DiffViewer
+                                                    environmentId={
+                                                        activeViews.diff
+                                                    }
+                                                    folder={folder}
+                                                    cli={cli}
+                                                />
+                                            </Suspense>
                                         )}
                                     </CardContent>
                                 </Card>
