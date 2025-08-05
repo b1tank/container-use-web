@@ -385,6 +385,12 @@ environments.openapi(environmentListRoute, async (c) => {
 		});
 
 		if (result.code !== 0) {
+			if (result.stderr.includes("you must be in a git repository")) {
+				console.warn(
+					"Git repository not found - returning empty environment list",
+				);
+				return c.json([], 200);
+			}
 			console.error("CLI command failed:", result.stderr);
 			const errorResponse = createCLIErrorResponse(
 				"Failed to fetch environments",
@@ -430,6 +436,20 @@ environments.openapi(environmentLogsRoute, async (c) => {
 		});
 
 		if (result.code !== 0) {
+			if (result.stderr.includes("you must be in a git repository")) {
+				console.warn(
+					"Git repository not found - cannot fetch logs for environment:",
+					id,
+				);
+				return c.json(
+					{
+						environmentId: id,
+						logs: "No logs available - not in a git repository",
+						timestamp: new Date().toISOString(),
+					},
+					200,
+				);
+			}
 			console.error("CLI log command failed:", result.stderr);
 			const errorResponse = createCLIErrorResponse(
 				"Failed to fetch environment logs",
@@ -481,6 +501,20 @@ environments.openapi(environmentDiffRoute, async (c) => {
 		});
 
 		if (result.code !== 0) {
+			if (result.stderr.includes("you must be in a git repository")) {
+				console.warn(
+					"Git repository not found - cannot fetch diff for environment:",
+					id,
+				);
+				return c.json(
+					{
+						environmentId: id,
+						diff: "No diff available - not in a git repository",
+						timestamp: new Date().toISOString(),
+					},
+					200,
+				);
+			}
 			console.error("CLI diff command failed:", result.stderr);
 			const errorResponse = createCLIErrorResponse(
 				"Failed to fetch environment diff",
@@ -532,6 +566,21 @@ environments.openapi(environmentApplyRoute, async (c) => {
 		});
 
 		if (result.code !== 0) {
+			if (result.stderr.includes("you must be in a git repository")) {
+				console.warn(
+					"Git repository not found - cannot apply environment:",
+					id,
+				);
+				return c.json(
+					{
+						environmentId: id,
+						output: "Cannot apply - not in a git repository",
+						success: false,
+						timestamp: new Date().toISOString(),
+					},
+					200,
+				);
+			}
 			console.error("CLI apply command failed:", result.stderr);
 			const errorResponse = createCLIErrorResponse(
 				"Failed to apply environment",
@@ -584,6 +633,21 @@ environments.openapi(environmentMergeRoute, async (c) => {
 		});
 
 		if (result.code !== 0) {
+			if (result.stderr.includes("you must be in a git repository")) {
+				console.warn(
+					"Git repository not found - cannot merge environment:",
+					id,
+				);
+				return c.json(
+					{
+						environmentId: id,
+						output: "Cannot merge - not in a git repository",
+						success: false,
+						timestamp: new Date().toISOString(),
+					},
+					200,
+				);
+			}
 			console.error("CLI merge command failed:", result.stderr);
 			const errorResponse = createCLIErrorResponse(
 				"Failed to merge environment",
@@ -636,6 +700,21 @@ environments.openapi(environmentCheckoutRoute, async (c) => {
 		});
 
 		if (result.code !== 0) {
+			if (result.stderr.includes("you must be in a git repository")) {
+				console.warn(
+					"Git repository not found - cannot checkout environment:",
+					id,
+				);
+				return c.json(
+					{
+						environmentId: id,
+						output: "Cannot checkout - not in a git repository",
+						success: false,
+						timestamp: new Date().toISOString(),
+					},
+					200,
+				);
+			}
 			console.error("CLI checkout command failed:", result.stderr);
 			const errorResponse = createCLIErrorResponse(
 				"Failed to checkout environment",

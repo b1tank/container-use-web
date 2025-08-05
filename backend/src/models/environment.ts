@@ -117,6 +117,26 @@ export const EnvironmentCheckoutSchema = z
 	})
 	.openapi("EnvironmentCheckout");
 
+export const WarningSchema = z
+	.object({
+		warning: z.string().openapi({
+			example: "Git repository not found",
+		}),
+		message: z.string().openapi({
+			example:
+				"This operation requires a git repository. Please initialize a git repository first.",
+		}),
+		details: z
+			.object({
+				exitCode: z.number(),
+				stderr: z.string(),
+				command: z.string(),
+				cwd: z.string(),
+			})
+			.optional(),
+	})
+	.openapi("Warning");
+
 export const ErrorSchema = z
 	.object({
 		error: z.string().openapi({
@@ -139,3 +159,4 @@ export type EnvironmentDiff = z.infer<typeof EnvironmentDiffSchema>;
 export type EnvironmentApply = z.infer<typeof EnvironmentApplySchema>;
 export type EnvironmentMerge = z.infer<typeof EnvironmentMergeSchema>;
 export type EnvironmentCheckout = z.infer<typeof EnvironmentCheckoutSchema>;
+export type Warning = z.infer<typeof WarningSchema>;
