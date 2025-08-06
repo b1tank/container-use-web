@@ -49,7 +49,7 @@ fi
 
 # Build CLI first
 echo "🔧 Building CLI..."
-pnpm exec tsc -p tsconfig.cli.json
+pnpm run build:cli
 
 # Build frontend
 echo "🎨 Building frontend..."
@@ -63,8 +63,8 @@ cd backend
 pnpm run build
 cd ..
 
-# Make CLI executable
-chmod +x bin/cli.js
+# CLI is already executable from the build process
+# No need to chmod again
 
 # Link for development if --dev flag is provided
 if [ "$DEV_MODE" = true ]; then

@@ -4,7 +4,7 @@
         {
             "label": "free port 8000",
             "type": "shell",
-            "command": "./scripts/free_port.sh 8000",
+            "command": "./scripts/free-port.sh 8000",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "../scripts/free_port.sh 5173 && vite --host",
+    "dev": "../scripts/free-port.sh 5173 && vite --host",
     "build": "tsc -b && vite build",
-    "preview": "../scripts/free_port.sh 5173 && vite preview --host",
+    "preview": "../scripts/free-port.sh 5173 && vite preview --host",
     "test": "vitest run",
     "lint": "biome lint",
     "lint:fix": "biome lint --write",

@@ -10,43 +10,46 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: ^1.17.1
-        version: 1.17.1(hono@4.8.10)
+        version: 1.18.1(hono@4.8.12)
       '@hono/node-ws':
         specifier: ^1.2.0
-        version: 1.2.0(@hono/node-server@1.17.1(hono@4.8.10))(hono@4.8.10)
+        version: 1.2.0(@hono/node-server@1.18.1(hono@4.8.12))(hono@4.8.12)
       '@hono/swagger-ui':
         specifier: ^0.5.2
-        version: 0.5.2(hono@4.8.10)
+        version: 0.5.2(hono@4.8.12)
       '@hono/zod-openapi':
         specifier: ^1.0.2
-        version: 1.0.2(hono@4.8.10)(zod@4.0.14)
+        version: 1.1.0(hono@4.8.12)(zod@4.0.15)
       chokidar:
         specifier: ^4.0.3
         version: 4.0.3
       hono:
         specifier: ^4.8.10
-        version: 4.8.10
+        version: 4.8.12
       node-pty:
         specifier: ^1.0.0
         version: 1.0.0
       zod:
         specifier: ^4.0.14
-        version: 4.0.14
+        version: 4.0.15
     devDependencies:
       '@types/node':
         specifier: ^20.11.17
         version: 20.19.9
+      esbuild:
+        specifier: ^0.25.8
+        version: 0.25.8
       tsx:
         specifier: ^4.7.1
         version: 4.20.3
       typescript:
         specifier: ^5.8.3
-        version: 5.8.3
+        version: 5.9.2
 
 packages:
 
-  '@asteasolutions/zod-to-openapi@8.0.0':
-    resolution: {integrity: sha512-C56hBPiraeSWUNLz8mB5Z0/0LdfaFD5d6WB/+hdUg0MiC7egTgvWRGh3M3jZ3CRl03l/NJWnmv5D3OUAz+JGeg==}
+  '@asteasolutions/zod-to-openapi@8.1.0':
+    resolution: {integrity: sha512-tQFxVs05J/6QXXqIzj6rTRk3nj1HFs4pe+uThwE95jL5II2JfpVXkK+CqkO7aT0Do5AYqO6LDrKpleLUFXgY+g==}
     peerDependencies:
       zod: ^4.0.0
 
@@ -206,8 +209,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@hono/node-server@1.17.1':
-    resolution: {integrity: sha512-SY79W/C+2b1MyAzmIcV32Q47vO1b5XwLRwj8S9N6Jr5n1QCkIfAIH6umOSgqWZ4/v67hg6qq8Ha5vZonVidGsg==}
+  '@hono/node-server@1.18.1':
+    resolution: {integrity: sha512-O3puG/b7owYYmoQ2XPBf3SxBz6Dhk5VmWFhbaBU8/5wcUaXUPS0goxaI2Zfyg+Cu14ILJHEU7IFRw7miFxuXxg==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -224,8 +227,8 @@ packages:
     peerDependencies:
       hono: '*'
 
-  '@hono/zod-openapi@1.0.2':
-    resolution: {integrity: sha512-zbxUZEnA+NaeotXRI2YPL5GEbz38DiO7Zp1nx/7yXOA2ITkcASYsYe/My/I38c44GCu+oUVM899zn4TBVn7JRg==}
+  '@hono/zod-openapi@1.1.0':
+    resolution: {integrity: sha512-S4jVR+A/jI4MA/RKJqmpjdHAN2l/EsqLnKHBv68x3WxV1NGVe3Sh7f6LV6rHEGYNHfiqpD75664A/erc+r9dQA==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       hono: '>=4.3.6'
@@ -257,8 +260,8 @@ packages:
   get-tsconfig@4.10.1:
     resolution: {integrity: sha512-auHyJ4AgMz7vgS8Hp3N6HXSmlMdUyhSUrfBF16w153rxtLIEOE+HGqaBppczZvnHLqQJfiHotCYpNhl0lUROFQ==}
 
-  hono@4.8.10:
-    resolution: {integrity: sha512-DRMYbR3aFk6YET1FCSAFbgF2cWYTz5j0YAFYPECx9fmrbKBDAYnWU+YCgRTpOaatxMYN6e68U/2IG39zRP4W/A==}
+  hono@4.8.12:
+    resolution: {integrity: sha512-MQSKk1Mg7b74k8l+A025LfysnLtXDKkE4pLaSsYRQC5iy85lgZnuyeQ1Wynair9mmECzoLu+FtJtqNZSoogBDQ==}
     engines: {node: '>=16.9.0'}
 
   nan@2.23.0:
@@ -282,8 +285,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  typescript@5.8.3:
-    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+  typescript@5.9.2:
+    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -302,20 +305,20 @@ packages:
       utf-8-validate:
         optional: true
 
-  yaml@2.8.0:
-    resolution: {integrity: sha512-4lLa/EcQCB0cJkyts+FpIRx5G/llPxfP6VQU5KByHEhLxY3IJCH0f0Hy1MHI8sClTvsIb8qwRJ6R/ZdlDJ/leQ==}
+  yaml@2.8.1:
+    resolution: {integrity: sha512-lcYcMxX2PO9XMGvAJkJ3OsNMw+/7FKes7/hgerGUYWIoWu5j/+YQqcZr5JnPZWzOsEBgMbSbiSTn/dv/69Mkpw==}
     engines: {node: '>= 14.6'}
     hasBin: true
 
-  zod@4.0.14:
-    resolution: {integrity: sha512-nGFJTnJN6cM2v9kXL+SOBq3AtjQby3Mv5ySGFof5UGRHrRioSJ5iG680cYNjE/yWk671nROcpPj4hAS8nyLhSw==}
+  zod@4.0.15:
+    resolution: {integrity: sha512-2IVHb9h4Mt6+UXkyMs0XbfICUh1eUrlJJAOupBHUhLRnKkruawyDddYRCs0Eizt900ntIMk9/4RksYl+FgSpcQ==}
 
 snapshots:
 
-  '@asteasolutions/zod-to-openapi@8.0.0(zod@4.0.14)':
+  '@asteasolutions/zod-to-openapi@8.1.0(zod@4.0.15)':
     dependencies:
       openapi3-ts: 4.5.0
-      zod: 4.0.14
+      zod: 4.0.15
 
   '@esbuild/aix-ppc64@0.25.8':
     optional: true
@@ -395,35 +398,35 @@ snapshots:
   '@esbuild/win32-x64@0.25.8':
     optional: true
 
-  '@hono/node-server@1.17.1(hono@4.8.10)':
+  '@hono/node-server@1.18.1(hono@4.8.12)':
     dependencies:
-      hono: 4.8.10
+      hono: 4.8.12
 
-  '@hono/node-ws@1.2.0(@hono/node-server@1.17.1(hono@4.8.10))(hono@4.8.10)':
+  '@hono/node-ws@1.2.0(@hono/node-server@1.18.1(hono@4.8.12))(hono@4.8.12)':
     dependencies:
-      '@hono/node-server': 1.17.1(hono@4.8.10)
-      hono: 4.8.10
+      '@hono/node-server': 1.18.1(hono@4.8.12)
+      hono: 4.8.12
       ws: 8.18.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@hono/swagger-ui@0.5.2(hono@4.8.10)':
+  '@hono/swagger-ui@0.5.2(hono@4.8.12)':
     dependencies:
-      hono: 4.8.10
+      hono: 4.8.12
 
-  '@hono/zod-openapi@1.0.2(hono@4.8.10)(zod@4.0.14)':
+  '@hono/zod-openapi@1.1.0(hono@4.8.12)(zod@4.0.15)':
     dependencies:
-      '@asteasolutions/zod-to-openapi': 8.0.0(zod@4.0.14)
-      '@hono/zod-validator': 0.7.2(hono@4.8.10)(zod@4.0.14)
-      hono: 4.8.10
+      '@asteasolutions/zod-to-openapi': 8.1.0(zod@4.0.15)
+      '@hono/zod-validator': 0.7.2(hono@4.8.12)(zod@4.0.15)
+      hono: 4.8.12
       openapi3-ts: 4.5.0
-      zod: 4.0.14
+      zod: 4.0.15
 
-  '@hono/zod-validator@0.7.2(hono@4.8.10)(zod@4.0.14)':
+  '@hono/zod-validator@0.7.2(hono@4.8.12)(zod@4.0.15)':
     dependencies:
-      hono: 4.8.10
-      zod: 4.0.14
+      hono: 4.8.12
+      zod: 4.0.15
 
   '@types/node@20.19.9':
     dependencies:
@@ -469,7 +472,7 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  hono@4.8.10: {}
+  hono@4.8.12: {}
 
   nan@2.23.0: {}
 
@@ -479,7 +482,7 @@ snapshots:
 
   openapi3-ts@4.5.0:
     dependencies:
-      yaml: 2.8.0
+      yaml: 2.8.1
 
   readdirp@4.1.2: {}
 
@@ -492,12 +495,12 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  typescript@5.8.3: {}
+  typescript@5.9.2: {}
 
   undici-types@6.21.0: {}
 
   ws@8.18.3: {}
 
-  yaml@2.8.0: {}
+  yaml@2.8.1: {}
 
-  zod@4.0.14: {}
+  zod@4.0.15: {}
