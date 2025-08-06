@@ -37,9 +37,6 @@ jobs:
       - name: Backend check
         run: cd backend && pnpm type-check
 
-      - name: Build
-        run: pnpm build
-
       - name: Package
         run: pnpm pack
 
@@ -80,9 +77,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-
-      - name: Build
-        run: pnpm build
 
       - name: Publish
         run: pnpm publish --no-git-checks --access public
