@@ -17,12 +17,12 @@
         "prepack": "./scripts/build.sh"
     },
     "keywords": [
-        "cli",
-        "container",
-        "docker",
-        "development",
+        "agent",
+        "mcp",
+        "container-use",
         "ui",
-        "dashboard"
+        "container",
+        "dagger"
     ],
     "repository": {
         "type": "git",
@@ -37,10 +37,7 @@
     "files": [
         "bin/",
         "backend/dist/",
-        "frontend/dist/",
-        "package.json",
-        "README.md",
-        "LICENSE"
+        "frontend/dist/"
     ],
     "dependencies": {
         "commander": "^14.0.0",
@@ -53,7 +50,7 @@
         "typescript": "^5.8.3"
     },
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=20.0.0"
     },
     "pnpm": {
         "onlyBuiltDependencies": [

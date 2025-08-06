@@ -1,0 +1,11 @@
+/Users/b1tank/container-use/container-use log
+8a9d3a6  Creating a README file with instructions for running the Flask app (77 seconds ago)
+Write README.md
+
+$ python app.py &
+
+20a0265  Creating requirements.txt file to specify Flask dependencies (83 seconds ago)
+Write requirements.txt
+
+93e82ca  Creating the main Flask application file with Hello World functionality (88 seconds ago)
+Write app.py

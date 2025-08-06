@@ -1,0 +1,33 @@
+/Users/b1tank/container-use/container-use diff
+diff --git a/README.md b/README.md
+index e69de29..2a65c16 100644
+--- a/README.md
++++ b/README.md
+@@ -0,0 +1,27 @@
++# Flask Hello World App
++
++A simple Flask web application that displays "Hello, World!" message.
++
++## Features
++
++- Basic "Hello, World!" route at `/`
++- Personalized greeting route at `/hello/<name>`
++- Debug mode enabled for development
++
++## Running the Application
++
++1. Install dependencies:
++   ```bash
++   pip install -r requirements.txt
++   ```
++
++2. Run the application:
++   ```bash
++   python app.py
++   ```
++
++3. Open your browser and navigate to:
++   - `http://localhost:5000` - Basic hello world message
++   - `http://localhost:5000/hello/YourName` - Personalized greeting
++
++The application will run on `http://localhost:5000` by default.

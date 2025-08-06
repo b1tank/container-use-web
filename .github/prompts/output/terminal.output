@@ -1,0 +1,16 @@
+/Users/b1tank/container-use/container-use terminal
+● Attaching terminal:
+container: Container!
+.from(address: "docker.io/library/ubuntu:24.04@sha256:a08e551cb33850e4740772b38217fc1796a66da2506d312abe51acda354ff061"): Container!
+.withWorkdir(path: "/workdir"): Container!
+.withDirectory(
+    ┆ ┆ path: "."
+    ┆ ┆ directory: GitRef.tree(discardGitDir: true): Directory!
+    ┆ ): Container!
+.withNewFile(path: "/cu/rc.sh", contents: "[ -f ~/.bashrc ] && . ~/.bashrc; \"/bin/bash\" --version | head -4; export PS1=\"\\033[33mcu\\033[0m \\033[02m\\$(pwd | sed \\\"s|^\\$HOME|~|\\\")\\033[0m \\$ \"\n"): Container!
+
+GNU bash, version 5.2.21(1)-release (aarch64-unknown-linux-gnu)
+Copyright (C) 2022 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+cu /workdir $

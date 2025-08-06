@@ -2,21 +2,7 @@
 
 set -e
 
-# Parse command line arguments
-DEV_MODE=false
-for arg in "$@"; do
-    case $arg in
-        --dev|-d)
-            DEV_MODE=true
-            shift
-            ;;
-        *)
-            # Unknown option
-            ;;
-    esac
-done
-
-echo "🏗️  Building Container Use UI CLI..."
+echo "🏗️  Building Container Use UI CLI: cuui ..."
 
 # Check if pnpm is installed
 if ! command -v pnpm &> /dev/null; then

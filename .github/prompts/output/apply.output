@@ -1,0 +1,11 @@
+/Users/b1tank/container-use/container-use apply
+Updating 09f15fc..8a9d3a6
+Fast-forward
+Squash commit -- not updating HEAD
+ README.md        | 27 +++++++++++++++++++++++++++
+ app.py           | 18 ++++++++++++++++++
+ requirements.txt |  2 ++
+ 3 files changed, 47 insertions(+)
+ create mode 100644 app.py
+ create mode 100644 requirements.txt
+Environment 'sharing-loon' applied successfully.

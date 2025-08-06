@@ -7,6 +7,8 @@
 
 # Preferred Technologies
 
+- Use commander for CLI development.
+- Use esbuild for bundling CLI and backend, and vite for bundling frontend.
 - Use node.js and hono for backend development.
 - Use TypeScript and tanstack router/query for frontend development.
 - Use React and popular libraries for building user interfaces.
