@@ -1,13 +1,25 @@
+<div align="center">
+  <img src="frontend/public/logo.svg" alt="cuui logo" width="180">
+</div>
+
+<br/>
+<p align="center">
+  <a href="https://npmjs.com/package/cuui"><img src="https://img.shields.io/npm/v/cuui.svg" alt="npm package"></a>
+  <a href="https://nodejs.org/en/about/previous-releases"><img src="https://img.shields.io/node/v/cuui.svg" alt="node compatibility"></a>
+  <a href="https://github.com/b1tank/container-use-ui/actions/workflows/ci.yml"><img src="https://github.com/b1tank/container-use-ui/actions/workflows/ci.yml/badge.svg?branch=main" alt="build status"></a>
+</p>
+<br/>
+
 # Container Use UI CLI
 
-A CLI tool (`cuu`) for running a local web UI for monitoring and managing Container Use environments.
+A CLI tool (`cuui`) for running a local web UI for monitoring and managing Container Use environments.
 
 ## Installation
 
 ### Global Installation
 
 ```bash
-npm install -g cuu
+npm install -g cuui
 ```
 
 ### Development Installation
@@ -28,17 +40,17 @@ cd container-use-ui
 
 ## Usage
 
-The `cuu` command starts a local web UI for monitoring and managing Container Use environments.
+The `cuui` command starts a local web UI for monitoring and managing Container Use environments.
 
 ```bash
 # Basic usage with defaults
-cuu
+cuui
 
 # Specify working directory and port
-cuu --dir ~/my-project --port 3000
+cuui --dir ~/my-project --port 3000
 
 # Use a specific container-use binary
-cuu --bin /usr/local/bin/container-use --dir ~/hello
+cuui --bin /usr/local/bin/container-use --dir ~/hello
 ```
 
 ### Command Options
@@ -62,19 +74,19 @@ The CLI properly handles path resolution:
 
 ```bash
 # Start from current directory
-cuu
+cuui
 
 # Start from home directory
-cuu --dir ~
+cuui --dir ~
 
 # Start from a specific directory
-cuu --dir ~/projects/my-app
+cuui --dir ~/projects/my-app
 
 # Start on different port and host
-cuu --host 0.0.0.0 --port 8080
+cuui --host 0.0.0.0 --port 8080
 
 # Use specific container-use binary
-cuu --bin ./my-container-use --dir .
+cuui --bin ./my-container-use --dir .
 ```
 
 The UI will automatically open in your browser with the specified working directory and binary path configured.

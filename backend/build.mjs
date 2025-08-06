@@ -70,7 +70,7 @@ const esbuildConfig = {
 	},
 	banner: {
 		js: `
-// ESBuild bundle for cuu backend
+// ESBuild bundle for cuui backend
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 `,

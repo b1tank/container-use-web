@@ -39,7 +39,7 @@ const esbuildConfig = {
 	},
 	banner: {
 		js: `#!/usr/bin/env node
-// ESBuild bundle for cuu CLI
+// ESBuild bundle for cuui CLI
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 `,

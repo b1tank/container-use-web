@@ -33,7 +33,7 @@ function resolveDirectory(dir: string): string {
 }
 
 program
-	.name("cuu")
+	.name("cuui")
 	.description(
 		"Container Use UI: Runs a local web UI for monitoring and managing Container Use environments.",
 	)
@@ -66,8 +66,8 @@ program
 				...process.env,
 				PORT: port,
 				HOST: host,
-				CUU_WORKING_DIR: workingDir,
-				CUU_CLI_BINARY: bin,
+				CUUI_WORKING_DIR: workingDir,
+				CUUI_CLI_BINARY: bin,
 			},
 		});
 

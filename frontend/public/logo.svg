@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#2496ED" stroke="#1976D2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-container-icon lucide-container"><path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z"/><path d="M10 21.9V14L2.1 9.1"/><path d="m10 14 11.9-6.9"/><path d="M14 19.8v-8.1"/><path d="M18 17.5V9.4"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <!-- Browser frame -->
+  <rect x="1" y="1" width="62" height="62" rx="6" fill="#FFFFFF" stroke="#1976D2" stroke-width="2.5"/>
+  <!-- Browser header -->
+  <rect x="1" y="1" width="62" height="10" rx="6" fill="#E3F2FD" stroke="#1976D2" stroke-width="2"/>
+  <!-- Browser buttons -->
+  <circle cx="8" cy="6" r="2" fill="#1976D2"/>
+  <circle cx="14" cy="6" r="2" fill="#1976D2"/>
+  <circle cx="20" cy="6" r="2" fill="#1976D2"/>
+
+  <g transform="translate(7.9, 12.8) scale(2)">
+    <path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z" fill="#E3F2FD" stroke="#1976D2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 21.9V14L2.1 9.1" stroke="#1976D2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="m10 14 11.9-6.9" stroke="#1976D2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14 19.8v-8.1" stroke="#1976D2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M18 17.5V9.4" stroke="#1976D2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

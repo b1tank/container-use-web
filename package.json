@@ -1,10 +1,10 @@
 {
-    "name": "cuu",
+    "name": "cuui",
     "version": "0.1.0",
     "description": "Container Use UI - A CLI tool for monitoring and managing Container Use environments via a web interface.",
     "type": "module",
     "bin": {
-        "cuu": "./bin/cli.js"
+        "cuui": "./bin/cli.js"
     },
     "scripts": {
         "build": "./scripts/build.sh",
@@ -14,17 +14,6 @@
         "clean:build": "rm -rf frontend/dist backend/dist bin",
         "clean:deps": "rm -rf node_modules frontend/node_modules backend/node_modules",
         "dev": "concurrently \"cd backend && pnpm run dev\" \"cd frontend && pnpm run dev\"",
-        "test": "pnpm run test:cli",
-        "test:cli": "./scripts/test-cli.sh",
-        "test:package": "./scripts/test-package.sh",
-        "test:package:full": "./scripts/test-package.sh --full",
-        "pre-publish": "./scripts/pre-publish.sh",
-        "publish:dry": "./scripts/publish.sh --dry-run",
-        "publish:beta": "./scripts/publish.sh --tag=beta",
-        "publish:patch": "./scripts/publish.sh --bump=patch",
-        "publish:minor": "./scripts/publish.sh --bump=minor",
-        "publish:major": "./scripts/publish.sh --bump=major",
-        "postinstall": "echo 'Container Use UI installed successfully!'",
         "prepack": "./scripts/build.sh"
     },
     "keywords": [

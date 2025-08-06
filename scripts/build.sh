@@ -31,22 +31,6 @@ if [ ! -d "node_modules" ]; then
     pnpm install
 fi
 
-# Install frontend dependencies if needed
-if [ ! -d "frontend/node_modules" ]; then
-    echo "📦 Installing frontend dependencies..."
-    cd frontend
-    pnpm install
-    cd ..
-fi
-
-# Install backend dependencies if needed
-if [ ! -d "backend/node_modules" ]; then
-    echo "📦 Installing backend dependencies..."
-    cd backend
-    pnpm install
-    cd ..
-fi
-
 # Build CLI first
 echo "🔧 Building CLI..."
 pnpm run build:cli
@@ -62,21 +46,3 @@ echo "⚙️  Building backend..."
 cd backend
 pnpm run build
 cd ..
-
-# CLI is already executable from the build process
-# No need to chmod again
-
-# Link for development if --dev flag is provided
-if [ "$DEV_MODE" = true ]; then
-    echo "🔗 Linking for development..."
-    npm link
-fi
-
-echo "✅ Build completed successfully!"
-if [ "$DEV_MODE" = true ]; then
-    echo "💡 CLI has been linked for development and is ready to use globally"
-else
-    echo "💡 You can now install globally with: npm install -g ."
-    echo "💡 Or link for development: npm link"
-    echo "💡 Or build with dev linking: ./scripts/build.sh --dev|-d"
-fi
