@@ -1,4 +1,5 @@
 import * as os from "node:os";
+import * as path from "node:path";
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import {
 	EnvironmentApplySchema,
@@ -14,8 +15,28 @@ import {
 	executeCLICommand,
 	executeGenericCommand,
 } from "../utils/cli-executor.js";
-import { CLI_COMMANDS, DEFAULT_CLI_PATH } from "../utils/constants.js";
+import {
+	CLI_COMMANDS,
+	getDefaultCLIPath,
+	getDefaultWorkingDir,
+} from "../utils/constants.js";
 import { parseEnvironmentList } from "../utils/parser.js";
+
+/**
+ * Resolves a directory path, handling special cases like '.' and '~'
+ */
+function resolveDirectory(dir: string): string {
+	if (dir === ".") {
+		return process.cwd();
+	}
+	if (dir.startsWith("~/")) {
+		return path.join(os.homedir(), dir.slice(2));
+	}
+	if (dir === "~") {
+		return os.homedir();
+	}
+	return path.resolve(dir);
+}
 
 // Helper function to get git repository information
 async function getGitInfo(workingDir: string) {
@@ -411,10 +432,10 @@ export const environments = new OpenAPIHono();
 environments.openapi(environmentListRoute, async (c) => {
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home folder
-	const workingDir = folder || os.homedir();
+	// Get the folder parameter from query string, default to working directory
+	const workingDir = folder ? resolveDirectory(folder) : getDefaultWorkingDir();
 	// Get the CLI command path from query string, default to constant
-	const cliPath = cli || DEFAULT_CLI_PATH;
+	const cliPath = cli || getDefaultCLIPath();
 
 	try {
 		// Get git repository information
@@ -475,10 +496,10 @@ environments.openapi(environmentLogsRoute, async (c) => {
 	const { id } = c.req.valid("param");
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home folder
-	const workingDir = folder || os.homedir();
+	// Get the folder parameter from query string, default to working directory
+	const workingDir = folder ? resolveDirectory(folder) : getDefaultWorkingDir();
 	// Get the CLI command path from query string, default to constant
-	const cliPath = cli || DEFAULT_CLI_PATH;
+	const cliPath = cli || getDefaultCLIPath();
 
 	try {
 		const result = await executeCLICommand({
@@ -540,10 +561,10 @@ environments.openapi(environmentDiffRoute, async (c) => {
 	const { id } = c.req.valid("param");
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home folder
-	const workingDir = folder || os.homedir();
+	// Get the folder parameter from query string, default to working directory
+	const workingDir = folder ? resolveDirectory(folder) : getDefaultWorkingDir();
 	// Get the CLI command path from query string, default to constant
-	const cliPath = cli || DEFAULT_CLI_PATH;
+	const cliPath = cli || getDefaultCLIPath();
 
 	try {
 		const result = await executeCLICommand({
@@ -605,10 +626,10 @@ environments.openapi(environmentApplyRoute, async (c) => {
 	const { id } = c.req.valid("param");
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home folder
-	const workingDir = folder || os.homedir();
+	// Get the folder parameter from query string, default to working directory
+	const workingDir = folder ? resolveDirectory(folder) : getDefaultWorkingDir();
 	// Get the CLI command path from query string, default to constant
-	const cliPath = cli || DEFAULT_CLI_PATH;
+	const cliPath = cli || getDefaultCLIPath();
 
 	try {
 		const result = await executeCLICommand({
@@ -672,10 +693,10 @@ environments.openapi(environmentMergeRoute, async (c) => {
 	const { id } = c.req.valid("param");
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home folder
-	const workingDir = folder || os.homedir();
+	// Get the folder parameter from query string, default to working directory
+	const workingDir = folder ? resolveDirectory(folder) : getDefaultWorkingDir();
 	// Get the CLI command path from query string, default to constant
-	const cliPath = cli || DEFAULT_CLI_PATH;
+	const cliPath = cli || getDefaultCLIPath();
 
 	try {
 		const result = await executeCLICommand({
@@ -739,10 +760,10 @@ environments.openapi(environmentCheckoutRoute, async (c) => {
 	const { id } = c.req.valid("param");
 	const { folder, cli } = c.req.valid("query");
 
-	// Get the folder parameter from query string, default to home folder
-	const workingDir = folder || os.homedir();
+	// Get the folder parameter from query string, default to working directory
+	const workingDir = folder ? resolveDirectory(folder) : getDefaultWorkingDir();
 	// Get the CLI command path from query string, default to constant
-	const cliPath = cli || DEFAULT_CLI_PATH;
+	const cliPath = cli || getDefaultCLIPath();
 
 	try {
 		const result = await executeCLICommand({

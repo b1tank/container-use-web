@@ -1,6 +1,6 @@
 # Container Use UI CLI
 
-A CLI tool for container development with an integrated UI dashboard.
+A CLI tool (`cuu`) for running a local web UI for monitoring and managing Container Use environments.
 
 ## Installation
 
@@ -28,36 +28,56 @@ cd container-use-ui
 
 ## Usage
 
-### Start the UI Dashboard
+The `cuu` command starts a local web UI for monitoring and managing Container Use environments.
 
 ```bash
-# Start with default settings (port 8000)
-container-use-ui start
+# Basic usage with defaults
+cuu
 
-# Or use the short alias
-cui start
+# Specify working directory and port
+cuu --dir ~/my-project --port 3000
 
-# Start on a different port
-container-use-ui start --port 3000
-
-# Start without opening browser
-container-use-ui start --no-open
-
-# Start on a different host
-container-use-ui start --host 0.0.0.0 --port 8000
+# Use a specific container-use binary
+cuu --bin /usr/local/bin/container-use --dir ~/hello
 ```
 
-### Available Commands
+### Command Options
 
-- `container-use-ui start` - Start the UI dashboard server
-- `container-use-ui version` - Show version information
-- `cui` - Short alias for `container-use-ui`
+- `-h, --host <HOST>` - Host to listen on (default: `localhost`)
+- `-p, --port <PORT>` - Port to listen on (default: `8000`)
+- `-d, --dir <DIR>` - Working directory (default: `.` - current directory)
+- `-b, --bin <BINARY>` - Path to the container-use binary (default: `container-use`)
+- `-v, --version` - Show version information
+- `--help` - Show help message
 
-### Options for `start` command
+### Path Resolution
 
-- `-p, --port <port>` - Port to run the server on (default: 8000)
-- `--no-open` - Do not open browser automatically
-- `-h, --host <host>` - Host to bind the server to (default: localhost)
+The CLI properly handles path resolution:
+- `.` resolves to the current working directory
+- `~` resolves to the user's home directory
+- `~/path` resolves to a path relative to the user's home directory
+- Absolute paths are used as-is
+
+### Examples
+
+```bash
+# Start from current directory
+cuu
+
+# Start from home directory
+cuu --dir ~
+
+# Start from a specific directory
+cuu --dir ~/projects/my-app
+
+# Start on different port and host
+cuu --host 0.0.0.0 --port 8080
+
+# Use specific container-use binary
+cuu --bin ./my-container-use --dir .
+```
+
+The UI will automatically open in your browser with the specified working directory and binary path configured.
 
 ## Features
 

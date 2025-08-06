@@ -1,6 +1,5 @@
 import { spawn } from "node:child_process";
-import * as os from "node:os";
-import { DEFAULT_CLI_PATH } from "./constants.js";
+import { getDefaultCLIPath } from "./constants.js";
 
 export interface CLIExecutionOptions {
 	command: string;
@@ -45,8 +44,8 @@ export async function executeCLICommand(
 	const {
 		command,
 		args = [],
-		workingDir = os.homedir(),
-		cliPath = DEFAULT_CLI_PATH,
+		workingDir = process.cwd(),
+		cliPath = getDefaultCLIPath(),
 		environment = {},
 		forceColor = true,
 	} = options;
@@ -99,7 +98,7 @@ export async function executeGenericCommand(
 	const {
 		command,
 		args = [],
-		workingDir = os.homedir(),
+		workingDir = process.cwd(),
 		environment = {},
 		forceColor = true,
 	} = options;

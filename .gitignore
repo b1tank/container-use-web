@@ -10,3 +10,5 @@ dist/
 bin/
 
 *.tgz
+
+TODO.md

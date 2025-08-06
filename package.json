@@ -4,8 +4,7 @@
     "description": "A CLI tool for monitoring container-use with a web UI",
     "type": "module",
     "bin": {
-        "container-use-ui": "./bin/cli.js",
-        "cui": "./bin/cli.js"
+        "cuu": "./bin/cli.js"
     },
     "scripts": {
         "build": "./scripts/build.sh",
@@ -50,6 +49,7 @@
         "bin/",
         "backend/dist/",
         "frontend/dist/",
+        "package.json",
         "README.md",
         "LICENSE"
     ],

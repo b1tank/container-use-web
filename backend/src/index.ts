@@ -1,4 +1,5 @@
 import * as os from "node:os";
+import * as path from "node:path";
 import process from "node:process";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
@@ -9,8 +10,28 @@ import { cors } from "hono/cors";
 import { environments } from "./routes/environments.js";
 import { files } from "./routes/files.js";
 import { git } from "./routes/git.js";
-import { CLI_COMMANDS, DEFAULT_CLI_PATH } from "./utils/constants.js";
+import {
+	CLI_COMMANDS,
+	getDefaultCLIPath,
+	getDefaultWorkingDir,
+} from "./utils/constants.js";
 import { handleFileWatch, handleTerminal } from "./utils/terminal.js";
+
+/**
+ * Resolves a directory path, handling special cases like '.' and '~'
+ */
+function resolveDirectory(dir: string): string {
+	if (dir === ".") {
+		return process.cwd();
+	}
+	if (dir.startsWith("~/")) {
+		return path.join(os.homedir(), dir.slice(2));
+	}
+	if (dir === "~") {
+		return os.homedir();
+	}
+	return path.resolve(dir);
+}
 
 const app = new OpenAPIHono();
 
@@ -55,10 +76,12 @@ app.get(
 		const folder = c.req.query("folder");
 		const cli = c.req.query("cli");
 
-		// Get the folder parameter from query string, default to home folder
-		const workingDir = folder || os.homedir();
+		// Get the folder parameter from query string, default to working directory
+		const workingDir = folder
+			? resolveDirectory(folder)
+			: getDefaultWorkingDir();
 		// Get the CLI command path from query string, default to constant
-		const cliPath = cli || DEFAULT_CLI_PATH;
+		const cliPath = cli || getDefaultCLIPath();
 
 		return {
 			onOpen: (event, ws) => {
@@ -99,10 +122,12 @@ app.get(
 		const folder = c.req.query("folder");
 		const cli = c.req.query("cli");
 
-		// Get the folder parameter from query string, default to home folder
-		const workingDir = folder || os.homedir();
+		// Get the folder parameter from query string, default to working directory
+		const workingDir = folder
+			? resolveDirectory(folder)
+			: getDefaultWorkingDir();
 		// Get the CLI command path from query string, default to constant
-		const cliPath = cli || DEFAULT_CLI_PATH;
+		const cliPath = cli || getDefaultCLIPath();
 
 		return {
 			onOpen: (event, ws) => {
@@ -203,9 +228,11 @@ app.use(
 
 // Read PORT from environment variable, default to 8000
 const port = parseInt(process.env.PORT || "8000");
+const host = process.env.HOST || "localhost";
 
 // Create and start the server
 const server = serve({
+	hostname: host,
 	port: port,
 	fetch: app.fetch, // Use Hono's fetch handler
 });

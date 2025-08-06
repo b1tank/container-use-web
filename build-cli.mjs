@@ -20,7 +20,7 @@ if (!existsSync(binDir)) {
 }
 
 const esbuildConfig = {
-	entryPoints: ["cli/src/cli.ts"],
+	entryPoints: ["src/cli.ts"],
 	bundle: true,
 	outfile: "bin/cli.js",
 	platform: "node",

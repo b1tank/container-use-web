@@ -16,7 +16,7 @@ node_modules/
 backend/src/
 frontend/src/
 frontend/public/
-cli/src/
+src/
 
 # Configuration files
 backend/tsconfig.json

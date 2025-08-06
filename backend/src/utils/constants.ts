@@ -3,7 +3,7 @@
  */
 
 // Default CLI configuration
-export const DEFAULT_CLI_PATH = "/Users/b1tank/container-use/container-use";
+export const DEFAULT_CLI_PATH = "container-use";
 
 // Default command arguments
 export const CLI_COMMANDS = {
@@ -29,5 +29,19 @@ export const QUERY_PARAMS = {
 
 // API configuration
 export const API_CONFIG = {
-	DEFAULT_FOLDER: null, // Will use os.homedir() when null
+	DEFAULT_FOLDER: null, // Will use process.cwd() when null
 } as const;
+
+/**
+ * Get default working directory from environment variable or current working directory
+ */
+export function getDefaultWorkingDir(): string {
+	return process.env.CUU_WORKING_DIR || process.cwd();
+}
+
+/**
+ * Get default CLI binary path from environment variable or default
+ */
+export function getDefaultCLIPath(): string {
+	return process.env.CUU_CLI_BINARY || DEFAULT_CLI_PATH;
+}

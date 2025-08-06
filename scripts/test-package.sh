@@ -117,7 +117,7 @@ npm link
 
 # Test CLI availability
 log_info "Testing CLI availability..."
-if ! command -v container-use-ui &> /dev/null; then
+if ! command -v cuu &> /dev/null; then
     log_error "CLI not found after linking"
     exit 1
 fi
@@ -154,9 +154,8 @@ if [ "$FULL_TEST" = true ]; then
 
     # Test installation
     log_info "Testing installed package..."
-    container-use-ui --help > /dev/null
-    cui --help > /dev/null
-    container-use-ui version > /dev/null
+    cuu --help > /dev/null
+    cuu --version > /dev/null
 
     log_success "Package installation test passed"
 
@@ -190,7 +189,7 @@ echo ""
 echo "📋 Summary:"
 echo "   Package: $PACKAGE_NAME@$PACKAGE_VERSION"
 echo "   Size: $PACKAGE_SIZE"
-echo "   CLI commands: container-use-ui, cui"
+echo "   CLI command: cuu"
 echo ""
 echo "🚀 Ready for publishing!"
 echo ""
