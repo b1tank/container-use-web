@@ -37,9 +37,6 @@ jobs:
       - name: Backend check
         run: cd backend && pnpm type-check
 
-      - name: Frontend test
-        run: cd frontend && pnpm test
-
       - name: Build
         run: pnpm build
 

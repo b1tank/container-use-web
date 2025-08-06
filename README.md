@@ -10,9 +10,9 @@
 </p>
 <br/>
 
-# <img src="frontend/public/logo.svg" alt="cuui" width="22" style="display: inline; margin-right: 8px;">Container Use UI (`cuui`)
+# <img src="frontend/public/logo.svg" alt="cuui" width="22" style="display: inline; margin-right: 8px;"> Container Use UI (`cuui`)
 
-> A CLI tool (`cuui`) for running a local web UI for monitoring and managing [Container Use](https://container-use.com) environments.
+> A CLI tool (`cuui`) for running a local web UI for monitoring and managing <a href="https://container-use.com" target="_blank">Container Use</a> environments.
 
 - 🌐 **Web UI**
 - 🚀 **Container Use Environment Monitoring**
