@@ -1,6 +1,6 @@
 {
     "name": "cuui",
-    "version": "0.1.0",
+    "version": "0.0.1",
     "description": "Container Use UI - A CLI tool for monitoring and managing Container Use environments via a web interface.",
     "type": "module",
     "bin": {
@@ -32,7 +32,7 @@
         "url": "https://github.com/b1tank/container-use-ui/issues"
     },
     "homepage": "https://github.com/b1tank/container-use-ui#readme",
-    "author": "b1tank",
+    "author": "Zhichao Li <b1tank@outlook.com> (https://github.com/b1tank)",
     "license": "MIT",
     "files": [
         "bin/",
