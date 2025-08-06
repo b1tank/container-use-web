@@ -19,7 +19,7 @@
             "name": "frontend: browser",
             "type": "chrome",
             "request": "launch",
-            "url": "http://localhost:5173?folder=/Users/b1tank/hello",
+            "url": "http://localhost:5173?folder=~/hello",
             "webRoot": "${workspaceFolder}/frontend",
         }
     ]

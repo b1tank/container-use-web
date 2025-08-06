@@ -19,7 +19,7 @@ export const folderListRoute = createRoute({
 						name: "path",
 						in: "query",
 					},
-					example: "/Users/b1tank/hello",
+					example: "~/hello",
 					description:
 						"Folder path to list. Defaults to home folder if not provided",
 				}),

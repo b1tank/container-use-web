@@ -10,7 +10,7 @@ export const FileEntrySchema = z.object({
 	}),
 	path: z.string().openapi({
 		description: "Full path to the file or folder",
-		example: "/Users/b1tank/hello/README.md",
+		example: "~/hello/README.md",
 	}),
 	type: z.enum(["file", "folder"]).openapi({
 		description: "Type of the entry",
@@ -32,7 +32,7 @@ export const FileEntrySchema = z.object({
 export const FolderListingSchema = z.object({
 	path: z.string().openapi({
 		description: "Current folder path",
-		example: "/Users/b1tank/hello",
+		example: "~/hello",
 	}),
 	items: z.array(FileEntrySchema).openapi({
 		description: "List of files and directories in the current path",
