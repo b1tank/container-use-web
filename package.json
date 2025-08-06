@@ -1,7 +1,7 @@
 {
-    "name": "container-use-ui",
+    "name": "cuu",
     "version": "0.1.0",
-    "description": "A CLI tool for monitoring container-use with a web UI",
+    "description": "Container Use UI - A CLI tool for monitoring and managing Container Use environments via a web interface.",
     "type": "module",
     "bin": {
         "cuu": "./bin/cli.js"

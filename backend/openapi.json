@@ -248,7 +248,7 @@
                     {
                         "schema": {
                             "type": "string",
-                            "example": "~/container-use/container-use",
+                            "example": "container-use",
                             "description": "Path to the container-use CLI"
                         },
                         "required": false,
@@ -309,7 +309,7 @@
                     {
                         "schema": {
                             "type": "string",
-                            "example": "~/container-use/container-use",
+                            "example": "container-use",
                             "description": "Path to the container-use CLI"
                         },
                         "required": false,
@@ -370,7 +370,7 @@
                     {
                         "schema": {
                             "type": "string",
-                            "example": "~/container-use/container-use",
+                            "example": "container-use",
                             "description": "Path to the container-use CLI"
                         },
                         "required": false,
@@ -431,7 +431,7 @@
                     {
                         "schema": {
                             "type": "string",
-                            "example": "~/container-use/container-use",
+                            "example": "container-use",
                             "description": "Path to the container-use CLI"
                         },
                         "required": false,
@@ -492,7 +492,7 @@
                     {
                         "schema": {
                             "type": "string",
-                            "example": "~/container-use/container-use",
+                            "example": "container-use",
                             "description": "Path to the container-use CLI"
                         },
                         "required": false,
@@ -553,7 +553,7 @@
                     {
                         "schema": {
                             "type": "string",
-                            "example": "~/container-use/container-use",
+                            "example": "container-use",
                             "description": "Path to the container-use CLI"
                         },
                         "required": false,

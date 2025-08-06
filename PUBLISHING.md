@@ -1,6 +1,6 @@
 # NPM Publishing Guide
 
-This guide covers how to test and publish the `container-use-ui` package to npm.
+This guide covers how to test and publish the `cuu` package to npm.
 
 ## Prerequisites
 
@@ -52,10 +52,10 @@ This includes everything from quick test plus:
 ./scripts/build.sh --dev
 
 # Test CLI commands
-container-use-ui --help
+cuu --help
 cui --help
-container-use-ui version
-container-use-ui start --help
+cuu version
+cuu start --help
 ```
 
 #### Test Package Contents
@@ -64,23 +64,23 @@ container-use-ui start --help
 npm pack
 
 # Inspect contents
-tar -tzf container-use-ui-*.tgz
+tar -tzf cuu-*.tgz
 
 # Check size
-ls -lh container-use-ui-*.tgz
+ls -lh cuu-*.tgz
 ```
 
 #### Test Installation from Tarball
 ```bash
 # Install globally from tarball
-npm install -g ./container-use-ui-*.tgz
+npm install -g ./cuu-*.tgz
 
 # Test installed package
-container-use-ui --help
+cuu --help
 cui start --help
 
 # Uninstall when done
-npm uninstall -g container-use-ui
+npm uninstall -g cuu
 ```
 
 ## Publishing Process
@@ -133,7 +133,7 @@ npm publish
 npm publish --tag beta
 npm publish --tag alpha
 
-# Users install with: npm install -g container-use-ui@beta
+# Users install with: npm install -g cuu@beta
 ```
 
 #### Scoped Package Publishing
@@ -146,11 +146,11 @@ npm publish --access public
 
 ```bash
 # Verify publication
-npm view container-use-ui
+npm view cuu
 
 # Test installation
-npm install -g container-use-ui@latest
-container-use-ui --help
+npm install -g cuu@latest
+cuu --help
 ```
 
 ## Troubleshooting
@@ -165,7 +165,7 @@ container-use-ui --help
 
 2. **Package Name Conflicts**
    ```bash
-   npm search container-use-ui  # Check if name exists
+   npm search cuu  # Check if name exists
    ```
 
 3. **Build Failures**
@@ -189,10 +189,10 @@ npm publish --dry-run
 npm pack --dry-run
 
 # View current package info
-npm view container-use-ui
+npm view cuu
 
 # Check package size and files
-npm pack && tar -tzf container-use-ui-*.tgz
+npm pack && tar -tzf cuu-*.tgz
 ```
 
 ### Testing in Different Environments
@@ -201,8 +201,8 @@ npm pack && tar -tzf container-use-ui-*.tgz
 ```bash
 # Test in clean Docker environment
 docker run -it --rm node:18-alpine sh
-npm install -g container-use-ui
-container-use-ui --help
+npm install -g cuu
+cuu --help
 ```
 
 #### CI/CD Test
@@ -211,8 +211,8 @@ Add to your CI pipeline:
 - name: Test Package
   run: |
     npm pack
-    npm install -g ./container-use-ui-*.tgz
-    container-use-ui --help
+    npm install -g ./cuu-*.tgz
+    cuu --help
     cui --help
 ```
 
@@ -244,8 +244,8 @@ Add to your CI pipeline:
 
 ```bash
 # Unpublish within 72 hours (use carefully)
-npm unpublish container-use-ui@1.0.0
+npm unpublish cuu@1.0.0
 
 # Deprecate a version instead (preferred)
-npm deprecate container-use-ui@1.0.0 "This version has critical bugs, please upgrade"
+npm deprecate cuu@1.0.0 "This version has critical bugs, please upgrade"
 ```

@@ -84,7 +84,7 @@ fi
 
 # 5. Check if npm package exists
 log_info "Checking npm registry..."
-if npm view "container-use-ui@$PACKAGE_VERSION" &> /dev/null; then
+if npm view "cuu@$PACKAGE_VERSION" &> /dev/null; then
     check_item 1 "Version v$PACKAGE_VERSION already published to npm"
     FAILED_CHECKS=$((FAILED_CHECKS + 1))
 else

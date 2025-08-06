@@ -7,7 +7,7 @@ A CLI tool (`cuu`) for running a local web UI for monitoring and managing Contai
 ### Global Installation
 
 ```bash
-npm install -g container-use-ui
+npm install -g cuu
 ```
 
 ### Development Installation

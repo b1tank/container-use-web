@@ -153,31 +153,31 @@ if [ "$DRY_RUN" = true ]; then
     log_success "Dry run completed successfully!"
     echo ""
     echo "📋 What would happen in a real publish:"
-    echo "   • Package would be published as container-use-ui@$CURRENT_VERSION"
+    echo "   • Package would be published as cuu@$CURRENT_VERSION"
     if [ ! -z "$TAG" ]; then
         echo "   • Would be tagged as: $TAG"
-        echo "   • Install with: npm install -g container-use-ui@$TAG"
+        echo "   • Install with: npm install -g cuu@$TAG"
     else
         echo "   • Would be tagged as: latest"
-        echo "   • Install with: npm install -g container-use-ui"
+        echo "   • Install with: npm install -g cuu"
     fi
     echo ""
     echo "🚀 To publish for real, run: $0 (without --dry-run)"
 else
     log_success "Package published successfully!"
     echo ""
-    echo "🎉 container-use-ui@$CURRENT_VERSION is now available on npm!"
+    echo "🎉 cuu@$CURRENT_VERSION is now available on npm!"
     echo ""
     echo "📦 Installation:"
     if [ ! -z "$TAG" ]; then
-        echo "   npm install -g container-use-ui@$TAG"
+        echo "   npm install -g cuu@$TAG"
     else
-        echo "   npm install -g container-use-ui"
+        echo "   npm install -g cuu"
     fi
     echo ""
     echo "🔗 Links:"
-    echo "   • npm: https://www.npmjs.com/package/container-use-ui"
-    echo "   • GitHub: https://github.com/b1tank/container-use-ui"
+    echo "   • npm: https://www.npmjs.com/package/cuu"
+    echo "   • GitHub: https://github.com/b1tank/cuu"
     echo ""
     echo "📋 Post-publish tasks:"
     echo "   • Update documentation if needed"
@@ -187,7 +187,7 @@ else
     # Verify publication
     log_info "Verifying publication..."
     sleep 5  # Wait for npm registry to update
-    if npm view "container-use-ui@$CURRENT_VERSION" version &> /dev/null; then
+    if npm view "cuu@$CURRENT_VERSION" version &> /dev/null; then
         log_success "Package verified on npm registry"
     else
         log_warning "Package not yet visible on registry (may take a few minutes)"

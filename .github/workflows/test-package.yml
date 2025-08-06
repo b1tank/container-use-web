@@ -37,12 +37,12 @@ jobs:
         npm install -g "./$TARBALL"
 
         # Verify CLI works
-        container-use-ui --help
+        cuu --help
         cui --help
-        container-use-ui version
+        cuu version
 
         # Cleanup
-        npm uninstall -g container-use-ui
+        npm uninstall -g cuu
         rm "$TARBALL"
 
   test-windows:
@@ -73,9 +73,9 @@ jobs:
         # Create and test package
         $tarball = npm pack
         npm install -g ".\$tarball"
-        container-use-ui --help
+        cuu --help
         cui --help
-        npm uninstall -g container-use-ui
+        npm uninstall -g cuu
         Remove-Item $tarball
 
   test-macos:
