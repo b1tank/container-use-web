@@ -33,9 +33,9 @@ function resolveDirectory(dir: string): string {
 }
 
 program
-	.name("cuui")
+	.name("cuweb")
 	.description(
-		"Container Use UI: Runs a local web UI for monitoring and managing Container Use environments.",
+		"Container Use Web: Runs a local web UI for monitoring and managing Container Use environments.",
 	)
 	.version(version)
 	.helpOption("-H, --help", "Display help for command")
@@ -54,7 +54,7 @@ program
 		// Resolve the working directory
 		const workingDir = resolveDirectory(dir);
 
-		console.log(`🚀 Starting Container Use UI on http://${host}:${port}`);
+		console.log(`🚀 Starting Container Use Web on http://${host}:${port}`);
 		console.log(`📁 Working directory: ${workingDir}`);
 		console.log(`🔧 Container-use binary: ${bin}`);
 
@@ -66,14 +66,14 @@ program
 				...process.env,
 				PORT: port,
 				HOST: host,
-				CUUI_WORKING_DIR: workingDir,
-				CUUI_CLI_BINARY: bin,
+				CUWEB_WORKING_DIR: workingDir,
+				CUWEB_CLI_BINARY: bin,
 			},
 		});
 
 		// Handle graceful shutdown
 		const cleanup = () => {
-			console.log("\n🛑 Shutting down Container Use UI...");
+			console.log("\n🛑 Shutting down Container Use Web...");
 			serverProcess.kill("SIGTERM");
 			process.exit(0);
 		};

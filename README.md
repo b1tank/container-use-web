@@ -1,18 +1,18 @@
 <div align="center">
-  <img src="frontend/public/logo.svg" alt="cuui logo" width="180">
+  <img src="frontend/public/logo.svg" alt="cuweb logo" width="180">
 </div>
 
 <br/>
 <p align="center">
-  <a href="https://npmjs.com/package/cuui"><img src="https://img.shields.io/npm/v/cuui.svg" alt="npm package"></a>
-  <a href="https://nodejs.org/en/about/previous-releases"><img src="https://img.shields.io/node/v/cuui.svg" alt="node compatibility"></a>
-  <a href="https://github.com/b1tank/container-use-ui/actions/workflows/ci.yml"><img src="https://github.com/b1tank/container-use-ui/actions/workflows/ci.yml/badge.svg?branch=main" alt="build status"></a>
+  <a href="https://npmjs.com/package/cuweb"><img src="https://img.shields.io/npm/v/cuweb.svg" alt="npm package"></a>
+  <a href="https://nodejs.org/en/about/previous-releases"><img src="https://img.shields.io/node/v/cuweb.svg" alt="node compatibility"></a>
+  <a href="https://github.com/b1tank/container-use-web/actions/workflows/ci.yml"><img src="https://github.com/b1tank/container-use-web/actions/workflows/ci.yml/badge.svg?branch=main" alt="build status"></a>
 </p>
 <br/>
 
-# <img src="frontend/public/logo.svg" alt="cuui" width="22" style="display: inline; margin-right: 8px;"> Container Use UI (`cuui`)
+# <img src="frontend/public/logo.svg" alt="cuweb" width="22" style="display: inline; margin-right: 8px;"> Container Use Web (`cuweb`)
 
-> A CLI tool (`cuui`) for running a local web UI for monitoring and managing <a href="https://container-use.com" target="_blank">Container Use</a> environments.
+> A CLI tool (`cuweb`) for running a local web UI for monitoring and managing <a href="https://container-use.com" target="_blank">Container Use</a> environments.
 
 - 🌐 **Web UI**
 - 🚀 **Container Use Environment Monitoring**
@@ -26,7 +26,7 @@
 ### Global Installation
 
 ```bash
-npm install -g cuui
+npm install -g cuweb
 ```
 
 ### Development Installation
@@ -38,8 +38,8 @@ npm install -g pnpm
 
 **Build and link:**
 ```bash
-git clone https://github.com/b1tank/container-use-ui.git
-cd container-use-ui
+git clone https://github.com/b1tank/container-use-web.git
+cd container-use-web
 
 ./scripts/build.sh
 npm link
@@ -63,19 +63,19 @@ npm link
 
 ```bash
 # Start from current directory
-cuui
+cuweb
 
 # Start from home directory
-cuui --dir ~
+cuweb --dir ~
 
 # Start from a specific directory
-cuui --dir ~/projects/my-app
+cuweb --dir ~/projects/my-app
 
 # Start on different port and host
-cuui --host 0.0.0.0 --port 8080
+cuweb --host 0.0.0.0 --port 8080
 
 # Use specific container-use binary
-cuui --bin ./my-container-use --dir .
+cuweb --bin ./my-container-use --dir .
 ```
 
 The UI will automatically open in your browser with the specified working directory and binary path configured.
@@ -85,7 +85,7 @@ The UI will automatically open in your browser with the specified working direct
 ### Project Structure
 
 ```
-container-use-ui/
+container-use-web/
 ├── src/              # CLI source code
 ├── backend/          # Hono API server
 ├── frontend/         # React UI
@@ -94,4 +94,4 @@ container-use-ui/
 
 ## License
 
-[MIT](https://github.com/b1tank/container-use-ui/blob/main/LICENSE)
+[MIT](https://github.com/b1tank/container-use-web/blob/main/LICENSE)

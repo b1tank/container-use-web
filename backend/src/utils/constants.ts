@@ -36,12 +36,12 @@ export const API_CONFIG = {
  * Get default working directory from environment variable or current working directory
  */
 export function getDefaultWorkingDir(): string {
-	return process.env.CUUI_WORKING_DIR || process.cwd();
+	return process.env.CUWEB_WORKING_DIR || process.cwd();
 }
 
 /**
  * Get default CLI binary path from environment variable or default
  */
 export function getDefaultCLIPath(): string {
-	return process.env.CUUI_CLI_BINARY || DEFAULT_CLI_PATH;
+	return process.env.CUWEB_CLI_BINARY || DEFAULT_CLI_PATH;
 }

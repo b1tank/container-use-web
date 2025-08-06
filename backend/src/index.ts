@@ -206,7 +206,7 @@ apiApp.route("/git", git);
 apiApp.doc("/doc", {
 	openapi: "3.1.0",
 	info: {
-		title: "Container Use UI API",
+		title: "Container Use Web API",
 		version: "1.0.0",
 	},
 });

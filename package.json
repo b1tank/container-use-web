@@ -1,10 +1,10 @@
 {
-    "name": "cuui",
+    "name": "cuweb",
     "version": "0.0.1",
-    "description": "Container Use UI - A CLI tool for monitoring and managing Container Use environments via a web interface.",
+    "description": "Container Use Web - A CLI tool for monitoring and managing Container Use environments via a web interface.",
     "type": "module",
     "bin": {
-        "cuui": "./bin/cli.js"
+        "cuweb": "./bin/cli.js"
     },
     "scripts": {
         "build": "./scripts/build.sh",
@@ -26,12 +26,12 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/b1tank/container-use-ui.git"
+        "url": "https://github.com/b1tank/container-use-web.git"
     },
     "bugs": {
-        "url": "https://github.com/b1tank/container-use-ui/issues"
+        "url": "https://github.com/b1tank/container-use-web/issues"
     },
-    "homepage": "https://github.com/b1tank/container-use-ui#readme",
+    "homepage": "https://github.com/b1tank/container-use-web#readme",
     "author": "Zhichao Li <b1tank@outlook.com> (https://github.com/b1tank)",
     "license": "MIT",
     "files": [

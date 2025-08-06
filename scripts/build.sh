@@ -2,7 +2,7 @@
 
 set -e
 
-echo "🏗️  Building Container Use UI CLI: cuui ..."
+echo "🏗️  Building Container Use Web CLI: cuweb ..."
 
 # Check if pnpm is installed
 if ! command -v pnpm &> /dev/null; then
