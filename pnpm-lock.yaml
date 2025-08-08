@@ -8,12 +8,36 @@ importers:
 
   .:
     dependencies:
+      '@hono/node-server':
+        specifier: ^1.17.1
+        version: 1.18.1(hono@4.8.12)
+      '@hono/node-ws':
+        specifier: ^1.2.0
+        version: 1.2.0(@hono/node-server@1.18.1(hono@4.8.12))(hono@4.8.12)
+      '@hono/swagger-ui':
+        specifier: ^0.5.2
+        version: 0.5.2(hono@4.8.12)
+      '@hono/zod-openapi':
+        specifier: ^1.0.2
+        version: 1.1.0(hono@4.8.12)(zod@4.0.15)
+      chokidar:
+        specifier: ^4.0.3
+        version: 4.0.3
       commander:
         specifier: ^14.0.0
         version: 14.0.0
+      hono:
+        specifier: ^4.8.10
+        version: 4.8.12
+      node-pty:
+        specifier: ^1.0.0
+        version: 1.0.0
       open:
         specifier: ^10.1.0
         version: 10.2.0
+      zod:
+        specifier: ^4.0.14
+        version: 4.0.15
     devDependencies:
       '@types/node':
         specifier: ^20.11.17

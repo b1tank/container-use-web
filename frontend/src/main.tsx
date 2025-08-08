@@ -13,7 +13,7 @@ import { OpenAPI } from "./client"
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen"
 
-OpenAPI.BASE = import.meta.env.VITE_API_URL
+OpenAPI.BASE = import.meta.env.VITE_API_URL || window.location.origin
 
 const queryClient = new QueryClient({
     queryCache: new QueryCache(),
