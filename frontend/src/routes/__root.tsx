@@ -25,9 +25,9 @@ const loadDevtools = () =>
         },
     )
 
-const TanStackDevtools = import.meta.env.PROD
-    ? () => null
-    : React.lazy(loadDevtools)
+const TanStackDevtools = import.meta.env.DEV
+    ? React.lazy(loadDevtools)
+    : () => null
 
 if (import.meta.env.DEV) {
     // Add CTRL+Q keydown handler to toggle the dev tools overlay visibility

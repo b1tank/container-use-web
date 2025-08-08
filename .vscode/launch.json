@@ -13,7 +13,11 @@
             "type": "node-terminal",
             "request": "launch",
             "command": "pnpm run dev",
-            "cwd": "${workspaceFolder}/frontend"
+            "cwd": "${workspaceFolder}/frontend",
+            "env": {
+                "VITE_API_URL": "http://localhost:8000",
+                "NODE_ENV": "development"
+            }
         },
         {
             "name": "frontend: browser",
