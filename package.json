@@ -13,8 +13,7 @@
         "build:backend": "cd backend && pnpm run build",
         "clean:build": "rm -rf frontend/dist backend/dist bin",
         "clean:deps": "rm -rf node_modules frontend/node_modules backend/node_modules",
-        "dev": "concurrently \"cd backend && pnpm run dev\" \"cd frontend && pnpm run dev\"",
-        "prepack": "./scripts/build.sh"
+        "dev": "concurrently \"cd backend && pnpm run dev\" \"cd frontend && pnpm run dev\""
     },
     "keywords": [
         "agent",
