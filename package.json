@@ -1,6 +1,6 @@
 {
     "name": "cuweb",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Container Use Web - A CLI tool for monitoring and managing Container Use environments via a web interface.",
     "type": "module",
     "bin": {
