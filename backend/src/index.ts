@@ -217,14 +217,23 @@ apiApp.get("/ui", swaggerUI({ url: "/api/v1/doc" }));
 // Mount the API app under /api/v1
 app.route("/api/v1", apiApp);
 
-// Serve frontend static files (production build) - this should be LAST
-app.use(
-	"/*",
-	serveStatic({
-		root: "./frontend/dist",
-		index: "index.html",
-	}),
-);
+// Serve frontend static files (production build) - require CUWEB_FRONTEND_DIST env var
+if (process.env.CUWEB_FRONTEND_DIST) {
+	app.use(
+		"/*",
+		serveStatic({
+			root: process.env.CUWEB_FRONTEND_DIST,
+			index: "index.html",
+		}),
+	);
+} else {
+	app.use("/*", async (c) => {
+		return c.text(
+			"Frontend static files are not available. Please set the CUWEB_FRONTEND_DIST environment variable to the frontend build directory, which should be in the npm package.",
+			503,
+		);
+	});
+}
 
 // Read PORT from environment variable, default to 8000
 const port = parseInt(process.env.PORT || "8000");

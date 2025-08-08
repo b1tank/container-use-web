@@ -6,7 +6,11 @@
             "type": "node-terminal",
             "request": "launch",
             "command": "pnpm run dev",
-            "cwd": "${workspaceFolder}/backend"
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "CUWEB_FRONTEND_DIST": "${workspaceFolder}/frontend/dist",
+                "NODE_ENV": "development"
+            }
         },
         {
             "name": "frontend",

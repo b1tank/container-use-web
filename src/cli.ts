@@ -60,6 +60,8 @@ program
 
 		// Start the backend server
 		const backendPath = join(__dirname, "..", "backend", "dist", "index.js");
+		// Resolve the absolute path to the frontend/dist directory
+		const frontendDist = resolve(join(__dirname, "..", "frontend", "dist"));
 		const serverProcess = spawn("node", [backendPath], {
 			stdio: "inherit",
 			env: {
@@ -68,6 +70,7 @@ program
 				HOST: host,
 				CUWEB_WORKING_DIR: workingDir,
 				CUWEB_CLI_BINARY: bin,
+				CUWEB_FRONTEND_DIST: frontendDist,
 			},
 		});
 
